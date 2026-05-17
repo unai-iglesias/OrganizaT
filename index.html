@@ -170,6 +170,9 @@
   .sb-bottom {
     padding: 8px;
     border-top: 0.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
   }
   .add-list-btn {
     display: flex;
@@ -187,6 +190,27 @@
     font-family: inherit;
   }
   .add-list-btn:hover { background: var(--surface2); color: var(--text); }
+ 
+  /* SEPARADORES DE FECHA EN LISTA */
+  .date-separator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 6px;
+  }
+  .date-separator:first-child { margin-top: 0; }
+  .date-sep-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+  .date-sep-line {
+    flex: 1;
+    height: 0.5px;
+    background: var(--border2);
+  }
  
   /* MAIN */
   .main {
@@ -421,6 +445,7 @@
 </div>
  
 <div class="topbar">
+  <button class="expand-btn" id="expandBtn" onclick="toggleSidebar()" title="Mostrar panel">›</button>
   <div class="topbar-title">📋 OrganizaT</div>
   <div class="sync-badge">
     <div class="sync-dot" id="syncDot"></div>
@@ -429,12 +454,18 @@
 </div>
  
 <div class="layout">
-  <div class="sidebar">
-    <div class="sb-section">Listas</div>
+  <div class="sidebar" id="sidebar">
+    <div class="sb-header">
+      <span class="sb-section">Listas</span>
+      <button class="collapse-btn" onclick="toggleSidebar()" title="Ocultar panel">‹</button>
+    </div>
     <div class="lists-scroll" id="listsArea"></div>
     <div class="sb-bottom">
+      <button class="add-list-btn" onclick="openTaskModal()">
+        <span style="font-size:16px">＋</span> Nueva tarea
+      </button>
       <button class="add-list-btn" onclick="openListModal()">
-        <span style="font-size:16px">＋</span> Nueva lista
+        <span style="font-size:16px; opacity:0.6">⊞</span> Nueva lista
       </button>
     </div>
   </div>
@@ -610,15 +641,33 @@ function renderList() {
   if (!vtasks.length) {
     html += `<div class="empty"><div class="empty-icon">📭</div>Sin tareas en ${MONTHS[curMonth]}</div>`;
   } else {
+    let lastDate = null;
     vtasks.forEach(t => {
       const lc = getListColor(t.list_id);
       const lname = lists.find(x => x.id === t.list_id)?.name || '';
-      const [,m,d] = t.date.split('-');
+      const [y,m,d] = t.date.split('-');
+ 
+      if (t.date !== lastDate) {
+        lastDate = t.date;
+        const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+        const todayD = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const diff = Math.round((dateObj - todayD) / 86400000);
+        let label = '';
+        if (diff === 0) label = 'Hoy';
+        else if (diff === 1) label = 'Mañana';
+        else if (diff === -1) label = 'Ayer';
+        else label = `${d} ${MONTHS[parseInt(m)-1]}`;
+        html += `<div class="date-separator">
+          <span class="date-sep-label">${label}</span>
+          <div class="date-sep-line"></div>
+        </div>`;
+      }
+ 
       html += `<div class="task-row" onclick="openTaskModal('${t.id}')">
         <div class="task-bar" style="background:${lc.c}"></div>
         <div class="task-body">
           <div class="task-title" style="${t.done?'text-decoration:line-through;opacity:0.45':''}">${t.title}</div>
-          <div class="task-meta">${d}/${m}${lname?' · <span style="color:'+lc.c+';font-weight:500">'+lname+'</span>':''}${t.description?' · '+t.description:''}</div>
+          <div class="task-meta">${lname?'<span style="color:'+lc.c+';font-weight:500">'+lname+'</span>':''}${t.description?(lname?' · ':'')+t.description:''}</div>
         </div>
         <button class="check-btn" onclick="toggleDone('${t.id}',event)" title="Marcar completada" style="color:${t.done?lc.c:'var(--text3)'}">${t.done?'✓':'○'}</button>
       </div>`;
@@ -631,6 +680,13 @@ function renderList() {
 function changeMonth(d) { curMonth+=d; if(curMonth>11){curMonth=0;curYear++;} if(curMonth<0){curMonth=11;curYear--;} render(); }
 function switchView(v) { curView=v; render(); }
 function setList(id) { activeListId=id; render(); }
+ 
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('expandBtn');
+  sb.classList.toggle('collapsed');
+  btn.classList.toggle('visible', sb.classList.contains('collapsed'));
+}
  
 async function toggleDone(id, e) {
   e.stopPropagation();
