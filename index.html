@@ -7,441 +7,155 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="OrganizaT">
 <title>OrganizaT</title>
+<link rel="icon" type="image/png" href="icono_app.png">
+<link rel="apple-touch-icon" href="icono_app.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
  
   :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --surface2: #f0efe9;
-    --border: rgba(0,0,0,0.08);
-    --border2: rgba(0,0,0,0.14);
-    --text: #1a1a18;
-    --text2: #6b6b65;
-    --text3: #a8a8a0;
-    --radius: 10px;
-    --radius-lg: 14px;
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+    --text: #1a1a18; --text2: #6b6b65; --text3: #a8a8a0;
+    --radius: 10px; --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root.theme-auto {
+      --bg:#1a1a18;--surface:#242422;--surface2:#2e2e2b;
+      --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+      --text:#f0efe9;--text2:#a8a8a0;--text3:#6b6b65;
+    }
+  }
+  :root.theme-dark {
+    --bg:#1a1a18;--surface:#242422;--surface2:#2e2e2b;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+    --text:#f0efe9;--text2:#a8a8a0;--text3:#6b6b65;
   }
  
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;transition:background 0.2s,color 0.2s}
  
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+  .topbar{display:flex;align-items:center;padding:0 16px;height:52px;background:var(--surface);border-bottom:0.5px solid var(--border);gap:10px;flex-shrink:0}
+  .topbar-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+  .sync-badge{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:#639922}
+  .sync-dot.syncing{background:#BA7517;animation:pulse 1s infinite}
+  .sync-dot.error{background:#A32D2D}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .icon-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:background 0.12s;flex-shrink:0;color:var(--text2)}
+  .icon-btn:hover{background:var(--surface2)}
  
-  /* TOPBAR */
-  .topbar {
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    height: 52px;
-    background: var(--surface);
-    border-bottom: 0.5px solid var(--border);
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .topbar-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    flex: 1;
-  }
-  .sync-badge {
-    font-size: 11px;
-    color: var(--text3);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .sync-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #639922;
-  }
-  .sync-dot.syncing { background: #BA7517; animation: pulse 1s infinite; }
-  .sync-dot.error { background: #A32D2D; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .layout{display:flex;flex:1;overflow:hidden}
  
-  /* LAYOUT */
-  .layout {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+  .sidebar{width:220px;min-width:220px;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s ease,min-width 0.2s ease}
+  .sidebar.collapsed{width:0;min-width:0;border-right:none}
+  .sb-header{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px;flex-shrink:0}
+  .sb-section{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase}
+  .collapse-btn{width:22px;height:22px;border-radius:6px;border:0.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:background 0.12s}
+  .collapse-btn:hover{background:var(--surface2);color:var(--text)}
+  .expand-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--surface);cursor:pointer;display:none;align-items:center;justify-content:center;color:var(--text2);font-size:15px;transition:background 0.12s;flex-shrink:0}
+  .expand-btn.visible{display:flex}
+  .expand-btn:hover{background:var(--surface2)}
+  .lists-scroll{flex:1;overflow-y:auto;padding:0 8px}
+  .list-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px;transition:background 0.12s;user-select:none}
+  .list-item:hover{background:var(--surface2)}
+  .list-item.active{background:var(--surface2)}
+  .list-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .list-name{flex:1;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .list-count{font-size:11px;color:var(--text3);background:var(--bg);border-radius:8px;padding:1px 7px;min-width:20px;text-align:center}
+  .list-edit-btn{opacity:0;font-size:14px;color:var(--text3);cursor:pointer;padding:2px;border-radius:4px;transition:opacity 0.12s}
+  .list-item:hover .list-edit-btn{opacity:1}
+  .sb-bottom{padding:8px;border-top:0.5px solid var(--border);display:flex;flex-direction:column;gap:3px}
+  .add-list-btn{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;transition:background 0.12s;width:100%;border:none;background:none;font-family:inherit}
+  .add-list-btn:hover{background:var(--surface2);color:var(--text)}
  
-  /* SIDEBAR */
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
-    background: var(--surface);
-    border-right: 0.5px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: width 0.2s ease, min-width 0.2s ease;
-  }
-  .sidebar.collapsed {
-    width: 0;
-    min-width: 0;
-    border-right: none;
-  }
-  .sb-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 12px 6px;
-    flex-shrink: 0;
-  }
-  .sb-section {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .collapse-btn {
-    width: 22px; height: 22px;
-    border-radius: 6px;
-    border: 0.5px solid var(--border2);
-    background: none;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text3);
-    font-size: 13px;
-    transition: background 0.12s, color 0.12s;
-    flex-shrink: 0;
-  }
-  .collapse-btn:hover { background: var(--surface2); color: var(--text); }
-  .expand-btn {
-    width: 28px; height: 28px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: var(--surface);
-    cursor: pointer;
-    display: none;
-    align-items: center; justify-content: center;
-    color: var(--text2);
-    font-size: 15px;
-    transition: background 0.12s;
-    flex-shrink: 0;
-  }
-  .expand-btn.visible { display: flex; }
-  .expand-btn:hover { background: var(--surface2); }
-  .lists-scroll { flex: 1; overflow-y: auto; padding: 0 8px; }
-  .list-item {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    margin-bottom: 2px;
-    transition: background 0.12s;
-    user-select: none;
-  }
-  .list-item:hover { background: var(--surface2); }
-  .list-item.active { background: var(--surface2); }
-  .list-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .list-name { flex: 1; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .list-count {
-    font-size: 11px; color: var(--text3);
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 1px 7px;
-    min-width: 20px;
-    text-align: center;
-  }
-  .list-edit-btn {
-    opacity: 0;
-    font-size: 14px;
-    color: var(--text3);
-    cursor: pointer;
-    padding: 2px;
-    border-radius: 4px;
-    transition: opacity 0.12s;
-  }
-  .list-item:hover .list-edit-btn { opacity: 1; }
-  .sb-bottom {
-    padding: 8px;
-    border-top: 0.5px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .add-list-btn {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    color: var(--text2);
-    font-size: 13px;
-    transition: background 0.12s;
-    width: 100%;
-    border: none;
-    background: none;
-    font-family: inherit;
-  }
-  .add-list-btn:hover { background: var(--surface2); color: var(--text); }
+  .date-separator{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
+  .date-separator:first-child{margin-top:0}
+  .date-sep-label{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;letter-spacing:0.03em}
+  .date-sep-line{flex:1;height:0.5px;background:var(--border2)}
  
-  /* SEPARADORES DE FECHA EN LISTA */
-  .date-separator {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 12px 0 6px;
-  }
-  .date-separator:first-child { margin-top: 0; }
-  .date-sep-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    white-space: nowrap;
-    letter-spacing: 0.03em;
-  }
-  .date-sep-line {
-    flex: 1;
-    height: 0.5px;
-    background: var(--border2);
-  }
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+  .main-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-wrap:wrap;flex-shrink:0}
+  .main-title-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  .main-title{font-size:15px;font-weight:600;color:var(--text)}
+  .active-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .cal-nav{display:flex;align-items:center;gap:6px}
+  .nav-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:16px;transition:background 0.12s}
+  .nav-btn:hover{background:var(--surface2)}
+  .month-label{font-size:13px;font-weight:500;color:var(--text);min-width:130px;text-align:center}
+  .view-tabs{display:flex;gap:3px}
+  .vtab{padding:5px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:none;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;transition:all 0.12s}
+  .vtab.active{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:500}
  
-  /* MAIN */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-  }
-  .main-header {
-    padding: 12px 16px;
-    border-bottom: 0.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface);
-    flex-wrap: wrap;
-    flex-shrink: 0;
-  }
-  .main-title-area { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-  .main-title { font-size: 15px; font-weight: 600; color: var(--text); }
-  .active-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .cal-nav { display: flex; align-items: center; gap: 6px; }
-  .nav-btn {
-    width: 28px; height: 28px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: none;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text2);
-    font-size: 16px;
-    transition: background 0.12s;
-  }
-  .nav-btn:hover { background: var(--surface2); }
-  .month-label { font-size: 13px; font-weight: 500; color: var(--text); min-width: 130px; text-align: center; }
-  .view-tabs { display: flex; gap: 3px; }
-  .vtab {
-    padding: 5px 12px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-    background: none;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--text2);
-    font-family: inherit;
-    transition: all 0.12s;
-  }
-  .vtab.active { background: var(--surface2); color: var(--text); border-color: var(--border2); font-weight: 500; }
+  .content-area{flex:1;overflow:auto;padding:10px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .day-name{text-align:center;font-size:11px;color:var(--text3);padding:4px;font-weight:500}
+  .day-cell{min-height:76px;border-radius:var(--radius);border:0.5px solid var(--border);padding:4px;background:var(--surface);transition:border-color 0.12s,background 0.12s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .day-cell:hover{border-color:var(--border2);background:var(--surface2)}
+  .day-cell.other-month{background:var(--bg);opacity:0.5}
+  .day-cell.today{border-color:#378ADD}
+  .day-cell.drag-over{border-color:#378ADD !important;background:rgba(55,138,221,0.1) !important}
+  .day-num{font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:500}
+  .day-cell.today .day-num{color:#185FA5;font-weight:600}
+  .cal-task{font-size:10px;padding:2px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;transition:opacity 0.12s}
+  .cal-task:active{cursor:grabbing}
+  .cal-task.dragging{opacity:0.35}
  
-  /* CALENDAR */
-  .content-area { flex: 1; overflow: auto; padding: 10px; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .day-name { text-align: center; font-size: 11px; color: var(--text3); padding: 4px; font-weight: 500; }
-  .day-cell {
-    min-height: 76px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-    padding: 4px;
-    background: var(--surface);
-    transition: border-color 0.12s;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .day-cell:hover { border-color: var(--border2); background: var(--surface2); }
-  .day-cell.other-month { background: var(--bg); opacity: 0.5; }
-  .day-cell.today { border-color: #378ADD; }
-  .day-num { font-size: 11px; color: var(--text2); margin-bottom: 3px; font-weight: 500; }
-  .day-cell.today .day-num { color: #185FA5; font-weight: 600; }
-  .cal-task {
-    font-size: 10px;
-    padding: 2px 5px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-  }
+  .list-view-wrap{padding:2px}
+  .add-task-top{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:var(--radius);border:0.5px dashed var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;margin-bottom:10px;width:100%;font-family:inherit;transition:background 0.12s}
+  .add-task-top:hover{background:var(--surface);color:var(--text)}
+  .task-row{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);margin-bottom:5px;cursor:pointer;transition:border-color 0.12s}
+  .task-row:hover{border-color:var(--border2)}
+  .task-bar{width:3px;border-radius:2px;align-self:stretch;flex-shrink:0}
+  .task-body{flex:1;min-width:0}
+  .task-title{font-size:13px;font-weight:500;color:var(--text)}
+  .task-meta{font-size:11px;color:var(--text3);margin-top:3px}
+  .check-btn{font-size:18px;cursor:pointer;flex-shrink:0;margin-top:1px;line-height:1;border:none;background:none}
  
-  /* LIST VIEW */
-  .list-view-wrap { padding: 2px; }
-  .add-task-top {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 12px;
-    border-radius: var(--radius);
-    border: 0.5px dashed var(--border2);
-    background: none;
-    color: var(--text2);
-    font-size: 13px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    width: 100%;
-    font-family: inherit;
-    transition: background 0.12s;
-  }
-  .add-task-top:hover { background: var(--surface); color: var(--text); }
-  .task-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-    background: var(--surface);
-    margin-bottom: 5px;
-    cursor: pointer;
-    transition: border-color 0.12s;
-  }
-  .task-row:hover { border-color: var(--border2); }
-  .task-bar { width: 3px; border-radius: 2px; align-self: stretch; flex-shrink: 0; }
-  .task-body { flex: 1; min-width: 0; }
-  .task-title { font-size: 13px; font-weight: 500; color: var(--text); }
-  .task-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
-  .check-btn { font-size: 18px; color: var(--text3); cursor: pointer; flex-shrink: 0; margin-top: 1px; line-height: 1; border: none; background: none; }
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:22px;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto}
+  .modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+  .fg{margin-bottom:11px}
+  .fg label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500}
+  .fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.12s}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#378ADD}
+  .fg textarea{resize:vertical;min-height:55px}
+  .fg-row{display:flex;gap:8px}
+  .fg-row .fg{flex:1}
  
-  /* MODAL */
-  .overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.3);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-    backdrop-filter: blur(2px);
-  }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 0.5px solid var(--border2);
-    padding: 22px;
-    width: 320px;
-    max-width: 92vw;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  }
-  .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
-  .fg { margin-bottom: 11px; }
-  .fg label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 4px; font-weight: 500; }
-  .fg input, .fg select, .fg textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 13px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.12s;
-  }
-  .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: #378ADD; }
-  .fg textarea { resize: vertical; min-height: 55px; }
-  .pcolors { display: flex; gap: 7px; margin-top: 5px; }
-  .pc { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.12s, transform 0.12s; }
-  .pc:hover { transform: scale(1.15); }
-  .pc.sel { border-color: var(--text); }
-  .mactions { display: flex; gap: 7px; margin-top: 16px; }
-  .btn-p {
-    flex: 1; padding: 9px;
-    border-radius: var(--radius);
-    border: none;
-    background: #27500A;
-    color: #EAF3DE;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.12s;
-  }
-  .btn-p:hover { background: #3B6D11; }
-  .btn-c {
-    padding: 9px 14px;
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border2);
-    background: none;
-    color: var(--text2);
-    font-size: 13px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .btn-c:hover { background: var(--surface2); }
-  .btn-d {
-    padding: 9px 12px;
-    border-radius: var(--radius);
-    border: 0.5px solid #F09595;
-    background: none;
-    color: #A32D2D;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .btn-d:hover { background: #FCEBEB; }
-  .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 40px 12px; }
-  .empty-icon { font-size: 28px; margin-bottom: 8px; }
+  .color-picker-wrap{margin-top:5px}
+  .color-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .pc{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.12s,transform 0.12s;flex-shrink:0}
+  .pc:hover{transform:scale(1.15)}
+  .pc.sel{border-color:var(--text)}
+  .custom-color-row{display:flex;align-items:center;gap:8px}
+  .custom-color-row label{font-size:11px;color:var(--text2);white-space:nowrap}
+  .custom-color-row input[type=color]{width:36px;height:28px;border-radius:6px;border:0.5px solid var(--border2);padding:2px;background:var(--bg);cursor:pointer}
+  .custom-color-preview{flex:1;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500}
  
-  /* LOADER */
-  .loader {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 12px;
-    z-index: 200;
-  }
-  .loader-spinner {
-    width: 32px; height: 32px;
-    border: 2px solid var(--border2);
-    border-top-color: #378ADD;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loader-text { font-size: 13px; color: var(--text2); }
+  .mactions{display:flex;gap:7px;margin-top:16px}
+  .btn-p{flex:1;padding:9px;border-radius:var(--radius);border:none;background:#27500A;color:#EAF3DE;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background 0.12s}
+  .btn-p:hover{background:#3B6D11}
+  .btn-c{padding:9px 14px;border-radius:var(--radius);border:0.5px solid var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit}
+  .btn-c:hover{background:var(--surface2)}
+  .btn-d{padding:9px 12px;border-radius:var(--radius);border:0.5px solid #F09595;background:none;color:#A32D2D;font-size:13px;cursor:pointer;font-family:inherit}
+  .btn-d:hover{background:#FCEBEB}
+  .empty{text-align:center;color:var(--text3);font-size:13px;padding:40px 12px}
+  .empty-icon{font-size:28px;margin-bottom:8px}
  
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
- 
-  /* MOBILE */
-  @media (max-width: 600px) {
-    .sidebar { width: 180px; min-width: 180px; }
-    .month-label { min-width: 90px; font-size: 11px; }
-    .modal { padding: 16px; }
-  }
+  .loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:200}
+  .loader-spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:#378ADD;border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loader-text{font-size:13px;color:var(--text2)}
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
 </head>
 <body>
  
 <div class="loader" id="loader">
   <div class="loader-spinner"></div>
-  <div class="loader-text">Cargando tareas...</div>
+  <div class="loader-text">Cargando OrganizaT...</div>
 </div>
  
 <div class="topbar">
@@ -451,6 +165,7 @@
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncText">Sincronizado</span>
   </div>
+  <button class="icon-btn" id="themeBtn" onclick="cycleTheme()" title="Cambiar tema"></button>
 </div>
  
 <div class="layout">
@@ -461,12 +176,8 @@
     </div>
     <div class="lists-scroll" id="listsArea"></div>
     <div class="sb-bottom">
-      <button class="add-list-btn" onclick="openTaskModal()">
-        <span style="font-size:16px">＋</span> Nueva tarea
-      </button>
-      <button class="add-list-btn" onclick="openListModal()">
-        <span style="font-size:16px; opacity:0.6">⊞</span> Nueva lista
-      </button>
+      <button class="add-list-btn" onclick="openTaskModal()"><span style="font-size:16px">＋</span> Nueva tarea</button>
+      <button class="add-list-btn" onclick="openListModal()"><span style="font-size:16px;opacity:0.6">⊞</span> Nueva lista</button>
     </div>
   </div>
   <div class="main">
@@ -480,102 +191,131 @@
 </div>
  
 <script>
-const SB_URL = 'https://focgxgvavxykelzxcjcx.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY2d4Z3Zhdnh5a2VsenhjamN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDUwMzEsImV4cCI6MjA5NDU4MTAzMX0.NzfePlNP4Ue344SQUP5_DOFSDNrvhSf9vs31M1a81VU';
-const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const SB_URL='https://focgxgvavxykelzxcjcx.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY2d4Z3Zhdnh5a2VsenhjamN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDUwMzEsImV4cCI6MjA5NDU4MTAzMX0.NzfePlNP4Ue344SQUP5_DOFSDNrvhSf9vs31M1a81VU';
+const HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
  
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DAYS_S = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
-const COLORS = [
-  {c:'#378ADD',t:'#E6F1FB'},{c:'#A32D2D',t:'#FCEBEB'},{c:'#BA7517',t:'#FAEEDA'},
-  {c:'#639922',t:'#EAF3DE'},{c:'#533AB7',t:'#EEEDFE'},{c:'#0F6E56',t:'#E1F5EE'},{c:'#993556',t:'#FBEAF0'}
+const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_S=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+const PALETTE=[
+  {c:'#378ADD'},{c:'#185FA5'},{c:'#A32D2D'},{c:'#C0392B'},
+  {c:'#BA7517'},{c:'#E67E22'},{c:'#639922'},{c:'#27AE60'},
+  {c:'#533AB7'},{c:'#8E44AD'},{c:'#0F6E56'},{c:'#16A085'},
+  {c:'#993556'},{c:'#2C3E50'},{c:'#7F8C8D'},{c:'#D35400'},
 ];
  
-const today = new Date();
-let curYear = today.getFullYear(), curMonth = today.getMonth();
-let curView = 'cal', activeListId = 'all';
-let editTaskId = null, editListId = null;
-let selColor = COLORS[0].c, selText = COLORS[0].t;
-let lists = [], tasks = [];
+function autoTextColor(hex){
+  if(!hex||hex.length<7) return '#f0efe9';
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return (0.299*r+0.587*g+0.114*b)/255>0.55?'#1a1a18':'#f0efe9';
+}
  
-async function api(method, table, body, id) {
+const today=new Date();
+let curYear=today.getFullYear(),curMonth=today.getMonth();
+let curView='cal',activeListId='all';
+let editTaskId=null,editListId=null;
+let selColor=PALETTE[0].c,selText=autoTextColor(PALETTE[0].c);
+let lists=[],tasks=[],dragTaskId=null;
+ 
+// TEMA
+const THEMES=['auto','light','dark'];
+const THEME_ICONS={auto:'🌗',light:'☀️',dark:'🌙'};
+let curTheme=localStorage.getItem('ot_theme')||'auto';
+function applyTheme(){
+  document.documentElement.className='theme-'+curTheme;
+  const btn=document.getElementById('themeBtn');
+  if(btn) btn.textContent=THEME_ICONS[curTheme];
+}
+function cycleTheme(){
+  curTheme=THEMES[(THEMES.indexOf(curTheme)+1)%THEMES.length];
+  localStorage.setItem('ot_theme',curTheme);
+  applyTheme();
+}
+applyTheme();
+ 
+// API
+async function api(method,table,body,id){
   setSyncing(true);
-  try {
-    let url = `${SB_URL}/rest/v1/${table}`;
-    if (id) url += `?id=eq.${id}`;
-    const res = await fetch(url, { method, headers: HEADERS, body: body ? JSON.stringify(body) : undefined });
-    const data = method === 'DELETE' ? [] : await res.json();
+  try{
+    let url=`${SB_URL}/rest/v1/${table}`;
+    if(id) url+=`?id=eq.${encodeURIComponent(id)}`;
+    const res=await fetch(url,{method,headers:HEADERS,body:body?JSON.stringify(body):undefined});
+    const data=method==='DELETE'?[]:await res.json();
     setSyncing(false);
     return data;
-  } catch(e) {
-    setError();
-    return null;
+  }catch(e){setError();return null;}
+}
+function setSyncing(s){
+  document.getElementById('syncDot').className='sync-dot'+(s?' syncing':'');
+  document.getElementById('syncText').textContent=s?'Sincronizando...':'Sincronizado';
+}
+function setError(){
+  document.getElementById('syncDot').className='sync-dot error';
+  document.getElementById('syncText').textContent='Error de conexión';
+}
+ 
+// Añadir columna time si no existe (por compatibilidad)
+async function ensureTimeColumn(){
+  // Intentamos leer tasks; si time no existe en la respuesta simplemente no pasa nada
+  // La columna se añade manualmente en Supabase si hace falta
+}
+ 
+// Borrado automático de tareas completadas del día anterior
+async function cleanCompleted(){
+  const ts=todayStr();
+  const toDelete=tasks.filter(t=>t.done&&t.date&&t.date<ts);
+  for(const t of toDelete){
+    tasks=tasks.filter(x=>x.id!==t.id);
+    await api('DELETE','tasks',null,t.id);
   }
 }
  
-function setSyncing(s) {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  if (s) { dot.className='sync-dot syncing'; txt.textContent='Sincronizando...'; }
-  else { dot.className='sync-dot'; txt.textContent='Sincronizado'; }
-}
-function setError() {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncText');
-  dot.className='sync-dot error'; txt.textContent='Error de conexión';
-}
- 
-async function loadAll() {
-  const [l, t] = await Promise.all([
-    api('GET','lists'),
-    api('GET','tasks')
-  ]);
-  lists = l || [];
-  tasks = t || [];
-  document.getElementById('loader').style.display = 'none';
+async function loadAll(){
+  const [l,t]=await Promise.all([api('GET','lists'),api('GET','tasks')]);
+  lists=l||[];
+  tasks=t||[];
+  await cleanCompleted();
+  document.getElementById('loader').style.display='none';
   render();
 }
  
-function getListColor(listId) {
-  const l = lists.find(x => x.id === listId);
-  return l ? {c: l.color, t: l.text_color} : {c:'#888780', t:'#F1EFE8'};
+function getListColor(listId){
+  const l=lists.find(x=>x.id===listId);
+  return l?{c:l.color,t:l.text_color}:{c:'#888780',t:'#F1EFE8'};
 }
- 
-function visibleTasks() {
-  if (activeListId === 'all') return tasks;
-  return tasks.filter(t => t.list_id === activeListId);
+function visibleTasks(){
+  return activeListId==='all'?tasks:tasks.filter(t=>t.list_id===activeListId);
 }
- 
-function todayStr() {
+function todayStr(){
   return `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 }
  
-function render() { renderSidebar(); renderMain(); }
+function render(){renderSidebar();renderMain();}
  
-function renderSidebar() {
-  const allCount = tasks.filter(t => !t.done).length;
-  let html = `<div class="list-item${activeListId==='all'?' active':''}" onclick="setList('all')">
+function renderSidebar(){
+  const allCount=tasks.filter(t=>!t.done).length;
+  let html=`<div class="list-item${activeListId==='all'?' active':''}" onclick="setList('all')">
     <div class="list-dot" style="background:var(--text3)"></div>
     <span class="list-name">Todas las tareas</span>
     <span class="list-count">${allCount}</span>
   </div>`;
-  lists.forEach(l => {
-    const cnt = tasks.filter(t => t.list_id === l.id && !t.done).length;
-    html += `<div class="list-item${activeListId===l.id?' active':''}" onclick="setList('${l.id}')">
+  lists.forEach(l=>{
+    const cnt=tasks.filter(t=>t.list_id===l.id&&!t.done).length;
+    html+=`<div class="list-item${activeListId===l.id?' active':''}" onclick="setList('${l.id}')">
       <div class="list-dot" style="background:${l.color}"></div>
       <span class="list-name">${l.name}</span>
       <span class="list-count">${cnt}</span>
-      <span class="list-edit-btn" onclick="openListModal('${l.id}');event.stopPropagation()" title="Editar lista">✎</span>
+      <span class="list-edit-btn" onclick="openListModal('${l.id}');event.stopPropagation()">✎</span>
     </div>`;
   });
-  document.getElementById('listsArea').innerHTML = html;
+  document.getElementById('listsArea').innerHTML=html;
 }
  
-function renderMain() {
-  const activeList = lists.find(x => x.id === activeListId);
-  const dotColor = activeList ? activeList.color : 'var(--text3)';
-  const title = activeList ? activeList.name : 'Todas las tareas';
-  document.getElementById('mainHeader').innerHTML = `
+function renderMain(){
+  const activeList=lists.find(x=>x.id===activeListId);
+  const dotColor=activeList?activeList.color:'var(--text3)';
+  const title=activeList?activeList.name:'Todas las tareas';
+  document.getElementById('mainHeader').innerHTML=`
     <div class="main-title-area">
       <div class="active-dot" style="background:${dotColor}"></div>
       <span class="main-title">${title}</span>
@@ -589,226 +329,255 @@ function renderMain() {
       <button class="vtab${curView==='cal'?' active':''}" onclick="switchView('cal')">Calendario</button>
       <button class="vtab${curView==='list'?' active':''}" onclick="switchView('list')">Lista</button>
     </div>`;
-  if (curView === 'cal') renderCalendar();
-  else renderList();
+  curView==='cal'?renderCalendar():renderList();
 }
  
-function renderCalendar() {
-  const first = new Date(curYear, curMonth, 1);
-  let startDay = first.getDay() - 1; if (startDay < 0) startDay = 6;
-  const dim = new Date(curYear, curMonth+1, 0).getDate();
-  const dimp = new Date(curYear, curMonth, 0).getDate();
-  const ts = todayStr();
-  const vtasks = visibleTasks();
-  const taskMap = {};
-  vtasks.forEach(t => { if(t.date)(taskMap[t.date]=taskMap[t.date]||[]).push(t); });
+function renderCalendar(){
+  const first=new Date(curYear,curMonth,1);
+  let startDay=first.getDay()-1;if(startDay<0)startDay=6;
+  const dim=new Date(curYear,curMonth+1,0).getDate();
+  const dimp=new Date(curYear,curMonth,0).getDate();
+  const ts=todayStr();
+  const vtasks=visibleTasks();
+  const taskMap={};
+  vtasks.forEach(t=>{if(t.date)(taskMap[t.date]=taskMap[t.date]||[]).push(t);});
  
-  let html = '<div class="cal-grid">';
-  DAYS_S.forEach(d => html += `<div class="day-name">${d}</div>`);
-  for (let i = 0; i < 42; i++) {
-    let d, m = curMonth, y = curYear, other = false;
-    if (i < startDay) { d = dimp-startDay+i+1; m = curMonth-1; other=true; if(m<0){m=11;y=curYear-1;} }
-    else if (i >= startDay+dim) { d = i-startDay-dim+1; m = curMonth+1; other=true; if(m>11){m=0;y=curYear+1;} }
-    else d = i - startDay + 1;
-    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = ds === ts;
-    const dt = taskMap[ds] || [];
-    const otherClass = other ? ' other-month' : '';
-    const todayClass = isToday ? ' today' : '';
-    html += `<div class="day-cell${otherClass}${todayClass}" onclick="handleDayClick(event,'${ds}')">`;
-    html += `<div class="day-num">${d}</div>`;
-    dt.slice(0,3).forEach(t => {
-      const lc = getListColor(t.list_id);
-      html += `<div class="cal-task" style="background:${lc.c} !important;color:${lc.t} !important;-webkit-text-fill-color:${lc.t};${t.done?'opacity:0.4':''}" onclick="event.stopPropagation();openTaskModal('${t.id}')" title="${t.title}">${t.done?'✓ ':''}${t.title}</div>`;
+  let html='<div class="cal-grid">';
+  DAYS_S.forEach(d=>html+=`<div class="day-name">${d}</div>`);
+  for(let i=0;i<42;i++){
+    let d,m=curMonth,y=curYear,other=false;
+    if(i<startDay){d=dimp-startDay+i+1;m=curMonth-1;other=true;if(m<0){m=11;y=curYear-1;}}
+    else if(i>=startDay+dim){d=i-startDay-dim+1;m=curMonth+1;other=true;if(m>11){m=0;y=curYear+1;}}
+    else d=i-startDay+1;
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===ts;
+    const dt=taskMap[ds]||[];
+    html+=`<div class="day-cell${other?' other-month':''}${isToday?' today':''}"
+      onclick="handleDayClick(event,'${ds}')"
+      ondragover="handleDragOver(event)"
+      ondragleave="handleDragLeave(event)"
+      ondrop="handleDrop(event,'${ds}')">`;
+    html+=`<div class="day-num">${d}</div>`;
+    dt.slice(0,3).forEach(t=>{
+      const lc=getListColor(t.list_id);
+      const tc=lc.t||autoTextColor(lc.c);
+      const timeStr=t.time?` ${t.time}`:'';
+      html+=`<div class="cal-task"
+        style="background:${lc.c} !important;color:${tc} !important;-webkit-text-fill-color:${tc};${t.done?'opacity:0.4':''}"
+        draggable="true"
+        ondragstart="handleDragStart(event,'${t.id}')"
+        ondragend="handleDragEnd(event)"
+        onclick="event.stopPropagation();openTaskModal('${t.id}')"
+        title="${t.title}${timeStr}">${t.done?'✓ ':''}${t.time?'⏰ ':''}${t.title}</div>`;
     });
-    if (dt.length > 3) html += `<div style="font-size:9px;color:var(--text3);padding:0 2px">+${dt.length-3} más</div>`;
-    html += '</div>';
+    if(dt.length>3)html+=`<div style="font-size:9px;color:var(--text3);padding:0 2px">+${dt.length-3} más</div>`;
+    html+='</div>';
   }
-  html += '</div>';
-  document.getElementById('contentArea').innerHTML = html;
+  html+='</div>';
+  document.getElementById('contentArea').innerHTML=html;
 }
  
-function renderList() {
-  const vtasks = visibleTasks().filter(t => {
-    if (!t.date) return false;
-    const [y,m] = t.date.split('-');
-    return parseInt(y)===curYear && parseInt(m)-1===curMonth;
-  }).sort((a,b) => a.date.localeCompare(b.date));
+function renderList(){
+  const vtasks=visibleTasks().filter(t=>{
+    if(!t.date)return false;
+    const[y,m]=t.date.split('-');
+    return parseInt(y)===curYear&&parseInt(m)-1===curMonth;
+  }).sort((a,b)=>{
+    const dc=a.date.localeCompare(b.date);
+    return dc!==0?dc:(a.time||'').localeCompare(b.time||'');
+  });
  
-  let html = `<div class="list-view-wrap">
-    <button class="add-task-top" onclick="openTaskModal()">＋ Nueva tarea</button>`;
- 
-  if (!vtasks.length) {
-    html += `<div class="empty"><div class="empty-icon">📭</div>Sin tareas en ${MONTHS[curMonth]}</div>`;
-  } else {
-    let lastDate = null;
-    vtasks.forEach(t => {
-      const lc = getListColor(t.list_id);
-      const lname = lists.find(x => x.id === t.list_id)?.name || '';
-      const [y,m,d] = t.date.split('-');
- 
-      if (t.date !== lastDate) {
-        lastDate = t.date;
-        const dateObj = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
-        const todayD = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const diff = Math.round((dateObj - todayD) / 86400000);
-        let label = '';
-        if (diff === 0) label = 'Hoy';
-        else if (diff === 1) label = 'Mañana';
-        else if (diff === -1) label = 'Ayer';
-        else label = `${d} ${MONTHS[parseInt(m)-1]}`;
-        html += `<div class="date-separator">
-          <span class="date-sep-label">${label}</span>
-          <div class="date-sep-line"></div>
-        </div>`;
+  let html=`<div class="list-view-wrap"><button class="add-task-top" onclick="openTaskModal()">＋ Nueva tarea</button>`;
+  if(!vtasks.length){
+    html+=`<div class="empty"><div class="empty-icon">📭</div>Sin tareas en ${MONTHS[curMonth]}</div>`;
+  }else{
+    let lastDate=null;
+    vtasks.forEach(t=>{
+      const lc=getListColor(t.list_id);
+      const tc=lc.t||autoTextColor(lc.c);
+      const lname=lists.find(x=>x.id===t.list_id)?.name||'';
+      const[y,m,d]=t.date.split('-');
+      if(t.date!==lastDate){
+        lastDate=t.date;
+        const dateObj=new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+        const todayD=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+        const diff=Math.round((dateObj-todayD)/86400000);
+        const label=diff===0?'Hoy':diff===1?'Mañana':diff===-1?'Ayer':`${d} ${MONTHS[parseInt(m)-1]}`;
+        html+=`<div class="date-separator"><span class="date-sep-label">${label}</span><div class="date-sep-line"></div></div>`;
       }
- 
-      html += `<div class="task-row" onclick="openTaskModal('${t.id}')">
+      const timeStr=t.time?`⏰ ${t.time} · `:'';
+      html+=`<div class="task-row" onclick="openTaskModal('${t.id}')">
         <div class="task-bar" style="background:${lc.c}"></div>
         <div class="task-body">
           <div class="task-title" style="${t.done?'text-decoration:line-through;opacity:0.45':''}">${t.title}</div>
-          <div class="task-meta">${lname?'<span style="color:'+lc.c+';font-weight:500">'+lname+'</span>':''}${t.description?(lname?' · ':'')+t.description:''}</div>
+          <div class="task-meta">${timeStr}${lname?'<span style="color:'+lc.c+';font-weight:500">'+lname+'</span>':''}${t.description?(lname?' · ':'')+t.description:''}</div>
         </div>
-        <button class="check-btn" onclick="toggleDone('${t.id}',event)" title="Marcar completada" style="color:${t.done?lc.c:'var(--text3)'}">${t.done?'✓':'○'}</button>
+        <button class="check-btn" onclick="toggleDone('${t.id}',event)" style="color:${t.done?lc.c:'var(--text3)'}">${t.done?'✓':'○'}</button>
       </div>`;
     });
   }
-  html += '</div>';
-  document.getElementById('contentArea').innerHTML = html;
+  html+='</div>';
+  document.getElementById('contentArea').innerHTML=html;
 }
  
-function changeMonth(d) { curMonth+=d; if(curMonth>11){curMonth=0;curYear++;} if(curMonth<0){curMonth=11;curYear--;} render(); }
-function switchView(v) { curView=v; render(); }
-function setList(id) { activeListId=id; render(); }
+// DRAG & DROP
+function handleDragStart(e,taskId){dragTaskId=taskId;e.target.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function handleDragEnd(e){e.target.classList.remove('dragging');dragTaskId=null;document.querySelectorAll('.day-cell').forEach(c=>c.classList.remove('drag-over'));}
+function handleDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';e.currentTarget.classList.add('drag-over');}
+function handleDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+async function handleDrop(e,dateStr){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(!dragTaskId)return;
+  const t=tasks.find(x=>x.id===dragTaskId);
+  if(!t||t.date===dateStr)return;
+  t.date=dateStr;render();
+  await api('PATCH','tasks',{date:dateStr},dragTaskId);
+}
  
-function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  const btn = document.getElementById('expandBtn');
+function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++;}if(curMonth<0){curMonth=11;curYear--;}render();}
+function switchView(v){curView=v;render();}
+function setList(id){activeListId=id;render();}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const btn=document.getElementById('expandBtn');
   sb.classList.toggle('collapsed');
-  btn.classList.toggle('visible', sb.classList.contains('collapsed'));
+  btn.classList.toggle('visible',sb.classList.contains('collapsed'));
 }
- 
-async function toggleDone(id, e) {
+async function toggleDone(id,e){
   e.stopPropagation();
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-  t.done = !t.done;
-  render();
-  await api('PATCH', 'tasks', {done: t.done}, id);
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  t.done=!t.done;render();
+  await api('PATCH','tasks',{done:t.done},id);
+}
+function handleDayClick(e,dateStr){
+  if(e.target.classList.contains('cal-task'))return;
+  openTaskModal(null,dateStr);
 }
  
-function handleDayClick(e, dateStr) {
-  if (e.target.classList.contains('cal-task')) return;
-  openTaskModal(null, dateStr);
+// COLOR PICKER
+function buildColorPicker(currentColor){
+  let html='<div class="color-picker-wrap"><div class="color-presets">';
+  PALETTE.forEach(col=>{
+    html+=`<div class="pc${col.c===currentColor?' sel':''}" style="background:${col.c}" data-c="${col.c}" onclick="pickPreset(this)"></div>`;
+  });
+  html+=`</div><div class="custom-color-row">
+    <label>Otro color:</label>
+    <input type="color" id="customColor" value="${currentColor}" oninput="pickCustom(this)">
+    <div class="custom-color-preview" id="colorPreview" style="background:${currentColor};color:${autoTextColor(currentColor)};-webkit-text-fill-color:${autoTextColor(currentColor)}">Ejemplo</div>
+  </div></div>`;
+  return html;
+}
+function pickPreset(el){
+  selColor=el.dataset.c;selText=autoTextColor(selColor);
+  document.querySelectorAll('.pc').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  const cc=document.getElementById('customColor');if(cc)cc.value=selColor;
+  updateColorPreview();
+}
+function pickCustom(input){
+  selColor=input.value;selText=autoTextColor(selColor);
+  document.querySelectorAll('.pc').forEach(e=>e.classList.remove('sel'));
+  updateColorPreview();
+}
+function updateColorPreview(){
+  const p=document.getElementById('colorPreview');
+  if(p){p.style.background=selColor;p.style.color=selText;p.style.webkitTextFillColor=selText;}
 }
  
-function openTaskModal(id, preDate) {
-  editTaskId = id || null;
-  const t = id ? tasks.find(x => x.id === id) : null;
-  let defList = activeListId === 'all' ? (lists[0]?.id || '') : activeListId;
-  let opts = lists.map(l => `<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${l.name}</option>`).join('');
-  const dateVal = t ? t.date : (preDate || todayStr());
-  const html = `<h3>${id ? 'Editar tarea' : 'Nueva tarea'}</h3>
+// MODALES
+function openTaskModal(id,preDate){
+  editTaskId=id||null;
+  const t=id?tasks.find(x=>x.id===id):null;
+  let defList=activeListId==='all'?(lists[0]?.id||''):activeListId;
+  let opts=lists.map(l=>`<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${l.name}</option>`).join('');
+  const dateVal=t?t.date:(preDate||todayStr());
+  const timeVal=t?(t.time||''):'';
+  const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
     <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${t?t.title:''}" placeholder="¿Qué tienes que hacer?"/></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
-    <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
-    <div class="fg"><label>Descripción</label><textarea id="fDesc" placeholder="Detalles opcionales...">${t?t.description:''}</textarea></div>
+    <div class="fg-row">
+      <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
+      <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label><input type="time" id="fTime" value="${timeVal}"/></div>
+    </div>
+    <div class="fg"><label>Descripción <span style="color:var(--text3);font-weight:400">(opcional)</span></label><textarea id="fDesc" placeholder="Detalles...">${t?t.description:''}</textarea></div>
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
       ${id?`<button class="btn-d" onclick="deleteTask()">🗑</button>`:''}
       <button class="btn-p" onclick="saveTask()">Guardar</button>
     </div>`;
   showModal(html);
-  setTimeout(() => document.getElementById('fTitle')?.focus(), 50);
+  setTimeout(()=>document.getElementById('fTitle')?.focus(),50);
 }
  
-function openListModal(id) {
-  editListId = id || null;
-  const l = id ? lists.find(x => x.id === id) : null;
-  selColor = l ? l.color : COLORS[0].c;
-  selText = l ? l.text_color : COLORS[0].t;
-  let phtml = COLORS.map(col =>
-    `<div class="pc${col.c===selColor?' sel':''}" style="background:${col.c}" data-c="${col.c}" data-t="${col.t}" onclick="selListColor(this)"></div>`
-  ).join('');
-  const html = `<h3>${id ? 'Editar lista' : 'Nueva lista'}</h3>
+function openListModal(id){
+  editListId=id||null;
+  const l=id?lists.find(x=>x.id===id):null;
+  selColor=l?l.color:PALETTE[0].c;
+  selText=l?l.text_color:autoTextColor(selColor);
+  const html=`<h3>${id?'Editar lista':'Nueva lista'}</h3>
     <div class="fg"><label>Nombre</label><input type="text" id="lName" value="${l?l.name:''}" placeholder="Ej: Urgente, Fútbol, Trabajo..."/></div>
-    <div class="fg"><label>Color</label><div class="pcolors">${phtml}</div></div>
+    <div class="fg"><label>Color</label>${buildColorPicker(selColor)}</div>
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
       ${id?`<button class="btn-d" onclick="deleteList()">🗑</button>`:''}
       <button class="btn-p" onclick="saveList()">Guardar</button>
     </div>`;
   showModal(html);
-  setTimeout(() => document.getElementById('lName')?.focus(), 50);
+  setTimeout(()=>document.getElementById('lName')?.focus(),50);
 }
  
-function selListColor(el) {
-  selColor = el.dataset.c; selText = el.dataset.t;
-  document.querySelectorAll('.pc').forEach(e => e.classList.remove('sel'));
-  el.classList.add('sel');
-}
+function showModal(html){document.getElementById('modalBox').innerHTML=html;document.getElementById('overlay').style.display='flex';}
+function closeModal(){document.getElementById('overlay').style.display='none';editTaskId=null;editListId=null;}
+function handleOverlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
  
-function showModal(html) {
-  document.getElementById('modalBox').innerHTML = html;
-  document.getElementById('overlay').style.display = 'flex';
-}
-function closeModal() {
-  document.getElementById('overlay').style.display = 'none';
-  editTaskId = null; editListId = null;
-}
-function handleOverlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
- 
-async function saveTask() {
-  const title = document.getElementById('fTitle').value.trim();
-  const date = document.getElementById('fDate').value;
-  const list_id = document.getElementById('fList').value;
-  if (!title || !date) return;
-  const description = document.getElementById('fDesc').value.trim();
-  if (editTaskId) {
-    const t = tasks.find(x => x.id === editTaskId);
-    Object.assign(t, {title, date, list_id, description});
-    closeModal(); render();
-    await api('PATCH', 'tasks', {title, date, list_id, description}, editTaskId);
-  } else {
-    const id = 't' + Date.now();
-    const newTask = {id, list_id, title, date, description, done: false};
-    tasks.push(newTask);
-    closeModal(); render();
-    await api('POST', 'tasks', newTask);
+async function saveTask(){
+  const title=document.getElementById('fTitle').value.trim();
+  const date=document.getElementById('fDate').value;
+  const list_id=document.getElementById('fList').value;
+  if(!title||!date)return;
+  const description=document.getElementById('fDesc').value.trim();
+  const time=document.getElementById('fTime').value||null;
+  if(editTaskId){
+    const t=tasks.find(x=>x.id===editTaskId);
+    Object.assign(t,{title,date,list_id,description,time});
+    closeModal();render();
+    await api('PATCH','tasks',{title,date,list_id,description,time},editTaskId);
+  }else{
+    const id='t'+Date.now();
+    const newTask={id,list_id,title,date,description,time,done:false};
+    tasks.push(newTask);closeModal();render();
+    await api('POST','tasks',newTask);
   }
 }
- 
-async function deleteTask() {
-  tasks = tasks.filter(x => x.id !== editTaskId);
-  const id = editTaskId;
-  closeModal(); render();
-  await api('DELETE', 'tasks', null, id);
+async function deleteTask(){
+  tasks=tasks.filter(x=>x.id!==editTaskId);
+  const id=editTaskId;closeModal();render();
+  await api('DELETE','tasks',null,id);
 }
- 
-async function saveList() {
-  const name = document.getElementById('lName').value.trim();
-  if (!name) return;
-  if (editListId) {
-    const l = lists.find(x => x.id === editListId);
-    Object.assign(l, {name, color: selColor, text_color: selText});
-    closeModal(); render();
-    await api('PATCH', 'lists', {name, color: selColor, text_color: selText}, editListId);
-  } else {
-    const id = 'l' + Date.now();
-    const newList = {id, name, color: selColor, text_color: selText};
-    lists.push(newList);
-    closeModal(); render();
-    await api('POST', 'lists', newList);
+async function saveList(){
+  const name=document.getElementById('lName').value.trim();
+  if(!name)return;
+  const color=selColor,text_color=selText;
+  if(editListId){
+    const l=lists.find(x=>x.id===editListId);
+    Object.assign(l,{name,color,text_color});
+    closeModal();render();
+    await api('PATCH','lists',{name,color,text_color},editListId);
+  }else{
+    const id='l'+Date.now();
+    const newList={id,name,color,text_color};
+    lists.push(newList);closeModal();render();
+    await api('POST','lists',newList);
   }
 }
- 
-async function deleteList() {
-  const id = editListId;
-  lists = lists.filter(x => x.id !== id);
-  tasks = tasks.filter(x => x.list_id !== id);
-  if (activeListId === id) activeListId = 'all';
-  closeModal(); render();
-  await api('DELETE', 'lists', null, id);
+async function deleteList(){
+  const id=editListId;
+  lists=lists.filter(x=>x.id!==id);
+  tasks=tasks.filter(x=>x.list_id!==id);
+  if(activeListId===id)activeListId='all';
+  closeModal();render();
+  await api('DELETE','lists',null,id);
 }
  
 loadAll();
