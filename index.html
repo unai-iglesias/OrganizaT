@@ -176,6 +176,33 @@
   ::-webkit-scrollbar{width:5px}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  /* Week view */
+  .week-grid{display:grid;grid-template-columns:44px repeat(7,1fr);gap:0;border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--border)}
+  .week-col-header{background:var(--surface);padding:6px 4px;text-align:center;border-bottom:.5px solid var(--border2);display:flex;flex-direction:column;align-items:center;gap:1px}
+  .week-col-header.today-col .wch-num{background:#378ADD;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+  .wch-day{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+  .wch-num{font-size:14px;font-weight:600;color:var(--text);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+  .week-time-col{background:var(--surface);display:flex;flex-direction:column}
+  .week-hour-label{height:52px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:10px;color:var(--text3);flex-shrink:0}
+  .week-day-col{background:var(--surface);display:flex;flex-direction:column;position:relative;min-width:0}
+  .week-day-col+.week-day-col{border-left:.5px solid var(--border)}
+  .week-hour-cell{height:52px;border-top:.5px solid var(--border);position:relative;cursor:pointer;transition:background .1s;flex-shrink:0}
+  .week-hour-cell:hover{background:var(--surface2)}
+  .week-event{position:absolute;left:2px;right:2px;border-radius:4px;padding:2px 4px;font-size:10px;overflow:hidden;cursor:pointer;z-index:2;line-height:1.3;white-space:nowrap;text-overflow:ellipsis}
+  .week-allday-row{background:var(--surface);border-bottom:.5px solid var(--border2);padding:3px 0;min-height:28px;display:flex;flex-direction:column;gap:2px;justify-content:flex-start}
+  .week-allday-cell{flex:1;padding:1px 2px;min-width:0}
+  .week-allday-event{border-radius:4px;padding:2px 5px;font-size:10px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+  .week-corner{background:var(--surface);border-bottom:.5px solid var(--border2)}
+  /* Day view */
+  .day-view-grid{display:grid;grid-template-columns:44px 1fr;border:.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--border);gap:0}
+  .day-view-allday{background:var(--surface);border-bottom:.5px solid var(--border2);padding:4px 8px;min-height:28px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+  .day-view-allday-label{font-size:10px;color:var(--text3)}
+  .day-view-hour-label{height:52px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:10px;color:var(--text3);background:var(--surface);flex-shrink:0}
+  .day-view-hour-cell{height:52px;border-top:.5px solid var(--border);background:var(--surface);cursor:pointer;position:relative;transition:background .1s}
+  .day-view-hour-cell:hover{background:var(--surface2)}
+  .day-view-event{position:absolute;left:4px;right:4px;border-radius:5px;padding:3px 6px;font-size:11px;cursor:pointer;overflow:hidden;z-index:2;line-height:1.4}
+  .now-line{position:absolute;left:0;right:0;height:1.5px;background:#378ADD;z-index:10;pointer-events:none}
+  .now-line::before{content:'';position:absolute;left:-4px;top:-3.5px;width:8px;height:8px;border-radius:50%;background:#378ADD}
 </style>
 </head>
 <body>
@@ -227,6 +254,7 @@ const PALETTE=['#378ADD','#185FA5','#A32D2D','#C0392B','#BA7517','#E67E22','#639
 const today=new Date();
 let curYear=today.getFullYear(),curMonth=today.getMonth();
 let curView='cal',activeListId='all',curSection='tasks';
+let curWeekStart=null,curDay=null; // for week/day views
 let editTaskId=null,editListId=null;
 let selColor=PALETTE[0],selText=autoTextColor(PALETTE[0]);
 let lists=[],tasks=[],notes=[],dragTaskId=null;
@@ -272,6 +300,24 @@ const THEMES=['auto','light','dark'],THEME_ICONS={auto:'🌗',light:'☀️',dar
 let curTheme=localStorage.getItem('ot_theme')||'auto';
 function applyTheme(){document.documentElement.className='theme-'+curTheme;document.getElementById('themeBtn').textContent=THEME_ICONS[curTheme];}
 function cycleTheme(){curTheme=THEMES[(THEMES.indexOf(curTheme)+1)%THEMES.length];localStorage.setItem('ot_theme',curTheme);applyTheme();}
+ 
+// ── VISTA CALENDARIO (ciclo) ──────────────────────────────────────────────────
+const CAL_VIEWS=['cal','week','day','list'];
+const CAL_CYCLE=['cal','week','day'];
+const CAL_VIEW_ICONS={cal:'📅',week:'🗓️',day:'📆',list:'📋'};
+const CAL_VIEW_LABELS={cal:'Mes',week:'Semana',day:'Día',list:'Lista'};
+function updateCalViewBtn(){
+  const btn=document.getElementById('calViewBtn');
+  const v=curView==='list'?'cal':curView;
+  if(btn){btn.textContent=CAL_VIEW_ICONS[v];btn.title=`Vista: ${CAL_VIEW_LABELS[v]} — clic para cambiar`;}
+}
+function cycleCalView(){
+  const base=curView==='list'?'cal':curView;
+  const idx=CAL_CYCLE.indexOf(base);
+  const next=CAL_CYCLE[(idx+1)%CAL_CYCLE.length];
+  switchView(next);
+  updateCalViewBtn();
+}
  
 // ── API SUPABASE ──────────────────────────────────────────────────────────────
 async function api(method,table,body,id){
@@ -434,6 +480,22 @@ function renderSidebarNotes(){
   document.getElementById('listsArea').innerHTML=html;
 }
  
+function getNavLabel(){
+  if(curView==='cal') return `${MONTHS[curMonth]} ${curYear}`;
+  if(curView==='week'){
+    const ws=getWeekStart();
+    const we=new Date(ws);we.setDate(we.getDate()+6);
+    if(ws.getMonth()===we.getMonth()) return `${ws.getDate()}–${we.getDate()} ${MONTHS[ws.getMonth()]} ${ws.getFullYear()}`;
+    return `${ws.getDate()} ${MONTHS[ws.getMonth()].slice(0,3)} – ${we.getDate()} ${MONTHS[we.getMonth()].slice(0,3)} ${we.getFullYear()}`;
+  }
+  if(curView==='day'){
+    const d=getCurDay();
+    const ts=todayStr(),ds=dateStr(d);
+    const label=ds===ts?'Hoy · ':'';
+    return `${label}${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  return '';
+}
 function renderMain(){
   const activeList=lists.find(x=>x.id===activeListId);
   const dotColor=activeList?activeList.color:'var(--text3)';
@@ -441,15 +503,16 @@ function renderMain(){
   document.getElementById('mainHeader').innerHTML=`
     <div class="main-title-area"><div class="active-dot" style="background:${dotColor}"></div><span class="main-title">${title}</span></div>
     <div class="cal-nav">
-      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-      <span class="month-label">${MONTHS[curMonth]} ${curYear}</span>
-      <button class="nav-btn" onclick="changeMonth(1)">›</button>
+      <button class="nav-btn" onclick="navPrev()">‹</button>
+      <span class="month-label" style="min-width:160px">${getNavLabel()}</span>
+      <button class="nav-btn" onclick="navNext()">›</button>
     </div>
-    <div class="view-tabs">
-      <button class="vtab${curView==='cal'?' active':''}" onclick="switchView('cal')">Calendario</button>
-      <button class="vtab${curView==='list'?' active':''}" onclick="switchView('list')">Lista</button>
-    </div>`;
-  curView==='cal'?renderCalendar():renderList();
+    <button class="icon-btn" id="calViewBtn" onclick="cycleCalView()" title="Vista: ${CAL_VIEW_LABELS[curView==='list'?'cal':curView]} — clic para cambiar">${CAL_VIEW_ICONS[curView==='list'?'cal':curView]}</button>
+    <button class="vtab${curView==='list'?' active':''}" onclick="toggleList()" style="margin-left:2px">Lista</button>`;
+  if(curView==='cal') renderCalendar();
+  else if(curView==='week') renderWeek();
+  else if(curView==='day') renderDay();
+  else renderList();
 }
  
 function renderCalendar(){
@@ -635,8 +698,193 @@ function switchSection(section){
   document.getElementById('navNotes').classList.toggle('active',section==='notes');
   render();
 }
+// ── HELPERS SEMANA/DÍA ────────────────────────────────────────────────────────
+function dateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function getWeekStart(){
+  if(curWeekStart) return new Date(curWeekStart);
+  // Default: week containing today
+  const d=new Date(today);const dow=d.getDay();const diff=dow===0?-6:1-dow;
+  d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);
+  curWeekStart=d.getTime();return new Date(d);
+}
+function getCurDay(){
+  if(curDay) return new Date(curDay);
+  const d=new Date(today);d.setHours(0,0,0,0);
+  curDay=d.getTime();return new Date(d);
+}
+function syncMonthFromWeek(){const ws=getWeekStart();curYear=ws.getFullYear();curMonth=ws.getMonth();}
+function syncMonthFromDay(){const d=getCurDay();curYear=d.getFullYear();curMonth=d.getMonth();}
+ 
+function navPrev(){
+  if(curView==='cal'){curMonth--;if(curMonth<0){curMonth=11;curYear--;}}
+  else if(curView==='week'){const ws=getWeekStart();ws.setDate(ws.getDate()-7);curWeekStart=ws.getTime();syncMonthFromWeek();}
+  else if(curView==='day'){const d=getCurDay();d.setDate(d.getDate()-1);curDay=d.getTime();syncMonthFromDay();}
+  else{curMonth--;if(curMonth<0){curMonth=11;curYear--;}}
+  render();
+}
+function navNext(){
+  if(curView==='cal'){curMonth++;if(curMonth>11){curMonth=0;curYear++;}}
+  else if(curView==='week'){const ws=getWeekStart();ws.setDate(ws.getDate()+7);curWeekStart=ws.getTime();syncMonthFromWeek();}
+  else if(curView==='day'){const d=getCurDay();d.setDate(d.getDate()+1);curDay=d.getTime();syncMonthFromDay();}
+  else{curMonth++;if(curMonth>11){curMonth=0;curYear++;}}
+  render();
+}
 function changeMonth(d){curMonth+=d;if(curMonth>11){curMonth=0;curYear++;}if(curMonth<0){curMonth=11;curYear--;}render();}
-function switchView(v){curView=v;render();}
+let prevCalView='cal'; // remembers last cal view before going to list
+function switchView(v){
+  if(v==='list'){
+    if(curView!=='list') prevCalView=curView; // save current cal view
+    curView='list';
+  } else {
+    curView=v;
+  }
+  if(curView==='week'&&!curWeekStart){
+    const d=new Date(curYear,curMonth,today.getFullYear()===curYear&&today.getMonth()===curMonth?today.getDate():1);
+    const dow=d.getDay();const diff=dow===0?-6:1-dow;
+    d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);
+    curWeekStart=d.getTime();
+  }
+  if(curView==='day'&&!curDay){
+    const d=new Date(curYear,curMonth,today.getFullYear()===curYear&&today.getMonth()===curMonth?today.getDate():1);
+    d.setHours(0,0,0,0);curDay=d.getTime();
+  }
+  render();
+}
+function toggleList(){
+  if(curView==='list') switchView(prevCalView);
+  else switchView('list');
+}
+ 
+// ── VISTA SEMANA ──────────────────────────────────────────────────────────────
+function renderWeek(){
+  const ws=getWeekStart();
+  const ts=todayStr();
+  const vtasks=visibleTasks();
+  // Build 7 days
+  const days=[];
+  for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);days.push(d);}
+  const HOURS=Array.from({length:24},(_,i)=>i);
+  const DAYS_FULL=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+ 
+  // Separate timed vs all-day tasks
+  const timedMap={};const alldayMap={};
+  days.forEach(d=>{const ds=dateStr(d);timedMap[ds]=[];alldayMap[ds]=[];});
+  vtasks.forEach(t=>{
+    if(!t.date||!days.some(d=>dateStr(d)===t.date))return;
+    if(t.time) timedMap[t.date].push(t);
+    else alldayMap[t.date].push(t);
+  });
+ 
+  let html='<div style="overflow:auto;height:100%"><div class="week-grid" style="min-width:520px">';
+  // Corner + headers
+  html+='<div class="week-corner" style="border-bottom:.5px solid var(--border2)"></div>';
+  days.forEach((d,i)=>{
+    const ds=dateStr(d);const isToday=ds===ts;
+    html+=`<div class="week-col-header${isToday?' today-col':''}">
+      <span class="wch-day">${DAYS_FULL[i]}</span>
+      <span class="wch-num">${d.getDate()}</span>
+    </div>`;
+  });
+  // All-day row
+  html+='<div class="week-corner" style="display:flex;align-items:center;justify-content:flex-end;padding:4px 6px;background:var(--surface);border-bottom:.5px solid var(--border2);font-size:9px;color:var(--text3)">todo el día</div>';
+  days.forEach(d=>{
+    const ds=dateStr(d);
+    html+=`<div class="week-allday-row"><div class="week-allday-cell" onclick="openTaskModal(null,'${ds}')">`;
+    alldayMap[ds].forEach(t=>{
+      const lc=getListColor(t.list_id);
+      html+=`<div class="week-allday-event" style="background:${lc.c};color:${lc.t}" onclick="event.stopPropagation();openTaskModal('${t.id}')">${esc(t.title)}</div>`;
+    });
+    html+='</div></div>';
+  });
+  // Time rows
+  HOURS.forEach(h=>{
+    const hLabel=h===0?'':String(h).padStart(2,'0')+':00';
+    html+=`<div class="week-time-col"><div class="week-hour-label">${hLabel}</div></div>`;
+    days.forEach(d=>{
+      const ds=dateStr(d);
+      const cellTasks=timedMap[ds].filter(t=>{const[th]=t.time.split(':').map(Number);return th===h;});
+      html+=`<div class="week-day-col"><div class="week-hour-cell" onclick="openTaskModal(null,'${ds}')">`;
+      cellTasks.forEach(t=>{
+        const lc=getListColor(t.list_id);
+        const[th,tm]=t.time.split(':').map(Number);
+        const topPct=(tm/60)*100;
+        html+=`<div class="week-event" style="top:${topPct}%;background:${lc.c};color:${lc.t}" onclick="event.stopPropagation();openTaskModal('${t.id}')">${t.time} ${esc(t.title)}</div>`;
+      });
+      html+='</div></div>';
+    });
+  });
+  html+='</div></div>';
+  document.getElementById('contentArea').innerHTML=html;
+  scrollToNowOrMorning();
+}
+ 
+// ── VISTA DÍA ─────────────────────────────────────────────────────────────────
+function renderDay(){
+  const d=getCurDay();
+  const ds=dateStr(d);
+  const ts=todayStr();
+  const vtasks=visibleTasks().filter(t=>t.date===ds);
+  const timed=vtasks.filter(t=>t.time).sort((a,b)=>a.time.localeCompare(b.time));
+  const allday=vtasks.filter(t=>!t.time);
+  const HOURS=Array.from({length:24},(_,i)=>i);
+ 
+  let html='<div style="overflow:auto;height:100%"><div class="day-view-grid" style="min-width:300px">';
+  // All-day header
+  html+='<div style="background:var(--surface);border-bottom:.5px solid var(--border2);display:flex;align-items:center;justify-content:flex-end;padding:4px 6px;font-size:9px;color:var(--text3)">todo el día</div>';
+  html+='<div class="day-view-allday" onclick="openTaskModal(null,\''+ds+'\')">';
+  if(allday.length){
+    allday.forEach(t=>{
+      const lc=getListColor(t.list_id);
+      html+=`<div class="week-allday-event" style="background:${lc.c};color:${lc.t}" onclick="event.stopPropagation();openTaskModal('${t.id}')">${esc(t.title)}</div>`;
+    });
+  }else{
+    html+='<span class="day-view-allday-label">Sin tareas sin hora</span>';
+  }
+  html+='</div>';
+ 
+  // Hour rows
+  const nowDate=new Date();
+  HOURS.forEach(h=>{
+    const hLabel=h===0?'':String(h).padStart(2,'0')+':00';
+    html+=`<div class="day-view-hour-label" id="dvhl_${h}">${hLabel}</div>`;
+    const cellTasks=timed.filter(t=>{const[th]=t.time.split(':').map(Number);return th===h;});
+    html+=`<div class="day-view-hour-cell" id="dvhc_${h}" onclick="openTaskModal(null,'${ds}')">`;
+    // Now line
+    if(ds===ts&&nowDate.getHours()===h){
+      const topPct=(nowDate.getMinutes()/60)*100;
+      html+=`<div class="now-line" style="top:${topPct}%"></div>`;
+    }
+    cellTasks.forEach(t=>{
+      const lc=getListColor(t.list_id);
+      const[,tm]=t.time.split(':').map(Number);
+      const topPct=(tm/60)*100;
+      html+=`<div class="day-view-event" style="top:${topPct}%;background:${lc.c};color:${lc.t};${t.done?'opacity:.45':''}" onclick="event.stopPropagation();openTaskModal('${t.id}')">
+        <div style="font-weight:600;font-size:11px">${t.time} ${t.done?'✓ ':''}${esc(t.title)}</div>
+        ${t.description?`<div style="font-size:10px;opacity:.8;margin-top:2px">${esc(t.description)}</div>`:''}
+      </div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div></div>';
+  document.getElementById('contentArea').innerHTML=html;
+  scrollToNowOrMorning();
+}
+ 
+function scrollToNowOrMorning(){
+  requestAnimationFrame(()=>{
+    const ca=document.getElementById('contentArea');
+    const scroller=ca?.querySelector('div[style*="overflow:auto"]');
+    if(!scroller)return;
+    const nowLine=scroller.querySelector('.now-line');
+    if(nowLine){
+      const parent=nowLine.closest('.day-view-hour-cell,.week-hour-cell');
+      if(parent) scroller.scrollTop=parent.offsetTop-80;
+    }else{
+      // Scroll to 8am (index 8 * 52px)
+      scroller.scrollTop=8*52-40;
+    }
+  });
+}
 function setList(id){activeListId=id;render();}
 function toggleSidebar(){
   const sb=document.getElementById('sidebar'),btn=document.getElementById('expandBtn');
