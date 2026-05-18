@@ -197,7 +197,7 @@
 // ── CONSTANTES ──────────────────────────────────────────────────────────────
 const SB_URL='https://focgxgvavxykelzxcjcx.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY2d4Z3Zhdnh5a2VsenhjamN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDUwMzEsImV4cCI6MjA5NDU4MTAzMX0.NzfePlNP4Ue344SQUP5_DOFSDNrvhSf9vs31M1a81VU';
-const HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+// Headers construidos dinámicamente en función api()
 const FB_CONFIG={apiKey:"AIzaSyAF4DVO6dixlCmuFzetWhJI09GShdJOxFI",authDomain:"organizat-ui.firebaseapp.com",projectId:"organizat-ui",storageBucket:"organizat-ui.firebasestorage.app",messagingSenderId:"775835679422",appId:"1:775835679422:web:71bc7fd3baad473e8fbcef"};
 const VAPID_KEY="BCRNie9PDGIhjuirP6W0Ckx5bGYxtZ-hVhhTp4IiEAO4c7wyO1rM_fO9lExg0zImJEcJKbVE6fKcF4OlmjRGs6Q";
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -241,12 +241,24 @@ async function api(method,table,body,id){
   setSyncing(true);
   try{
     let url=`${SB_URL}/rest/v1/${table}`;
-    if(id)url+=`?id=eq.${encodeURIComponent(id)}`;
-    const res=await fetch(url,{method,headers:HEADERS,body:body?JSON.stringify(body):undefined});
-    const data=method==='DELETE'?[]:await res.json();
+    if(id) url+=`?id=eq.${id}`;
+    const hdrs={
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation'
+    };
+    const res=await fetch(url,{method,headers:hdrs,body:body?JSON.stringify(body):undefined});
+    if(!res.ok){
+      const err=await res.text();
+      console.error('Supabase error',method,table,id,err);
+      setError();
+      return null;
+    }
+    const data=(method==='DELETE'||res.status===204)?[]:await res.json();
     setSyncing(false);
     return data;
-  }catch(e){setError();return null;}
+  }catch(e){console.error('API error',e);setError();return null;}
 }
 function setSyncing(s){document.getElementById('syncDot').className='sync-dot'+(s?' syncing':'');document.getElementById('syncText').textContent=s?'Sincronizando...':'Sincronizado';}
 function setError(){document.getElementById('syncDot').className='sync-dot error';document.getElementById('syncText').textContent='Error de conexión';}
