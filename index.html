@@ -413,6 +413,9 @@ function scheduleNotifications(){
       }else if(a.type==='same_day'&&a.hour){
         const[h,m]=a.hour.split(':').map(Number);
         when=new Date(ty,tm-1,td,h,m,0);
+      }else if(a.type==='before_1h'&&t.time){
+        const[h,m]=t.time.split(':').map(Number);
+        when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-3600000);
       }else if(a.type==='before_30m'&&t.time){
         const[h,m]=t.time.split(':').map(Number);
         when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-1800000);
@@ -785,8 +788,13 @@ function switchView(v){
   render();
 }
 function toggleList(){
-  if(curView==='list') switchView(prevCalView);
-  else switchView('list');
+  if(curView==='list'){
+    // Asegurarse de que prevCalView nunca sea 'list' para evitar bucle
+    const safe=(['cal','week','day'].includes(prevCalView))?prevCalView:'cal';
+    switchView(safe);
+  } else {
+    switchView('list');
+  }
 }
  
 // ── VISTA SEMANA ──────────────────────────────────────────────────────────────
