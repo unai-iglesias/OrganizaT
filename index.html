@@ -404,8 +404,8 @@ function scheduleNotifications(){
         const[h,m]=a.hour.split(':').map(Number);
         when=new Date(ty,tm-1,td-1,h,m,0);
       }else if(a.type==='same_day'&&a.hour){
-        const[h,m]=t.time.split(':').map(Number);
-        when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-3600000);
+        const[h,m]=a.hour.split(':').map(Number);
+        when=new Date(ty,tm-1,td,h,m,0);
       }else if(a.type==='before_30m'&&t.time){
         const[h,m]=t.time.split(':').map(Number);
         when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-1800000);
@@ -502,11 +502,11 @@ function renderMain(){
   const title=activeList?esc(activeList.name):'Todas las tareas';
   document.getElementById('mainHeader').innerHTML=`
     <div class="main-title-area"><div class="active-dot" style="background:${dotColor}"></div><span class="main-title">${title}</span></div>
-    <div class="cal-nav">
+    ${curView!=='list'?`<div class="cal-nav">
       <button class="nav-btn" onclick="navPrev()">‹</button>
       <span class="month-label" style="min-width:160px">${getNavLabel()}</span>
       <button class="nav-btn" onclick="navNext()">›</button>
-    </div>
+    </div>`:''}
     <button class="icon-btn" id="calViewBtn" onclick="cycleCalView()" title="Vista: ${CAL_VIEW_LABELS[curView==='list'?'cal':curView]} — clic para cambiar">${CAL_VIEW_ICONS[curView==='list'?'cal':curView]}</button>
     <button class="vtab${curView==='list'?' active':''}" onclick="toggleList()" style="margin-left:2px">Lista</button>`;
   if(curView==='cal') renderCalendar();
@@ -548,13 +548,10 @@ function renderCalendar(){
 }
  
 function renderList(){
-  const vtasks=visibleTasks().filter(t=>{
-    if(!t.date)return false;
-    const[y,m]=t.date.split('-');
-    return parseInt(y)===curYear&&parseInt(m)-1===curMonth;
-  }).sort((a,b)=>{const dc=a.date.localeCompare(b.date);return dc!==0?dc:(a.time||'').localeCompare(b.time||'');});
+  const vtasks=visibleTasks().filter(t=>t.date)
+    .sort((a,b)=>{const dc=a.date.localeCompare(b.date);return dc!==0?dc:(a.time||'').localeCompare(b.time||'');});
   let html='<div class="list-view-wrap"><button class="add-task-top" onclick="openTaskModal()">＋ Nueva tarea</button>';
-  if(!vtasks.length){html+=`<div class="empty"><div class="empty-icon">📭</div>Sin tareas en ${MONTHS[curMonth]}</div>`;}
+  if(!vtasks.length){html+=`<div class="empty"><div class="empty-icon">📭</div>Sin tareas pendientes</div>`;}
   else{
     let lastDate=null;
     vtasks.forEach(t=>{
