@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="OrganizaT">
@@ -189,7 +190,7 @@
   <div class="modal" id="modalBox"></div>
 </div>
  
-<!-- Firebase compat (no módulo, accesible globalmente) -->
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
  
@@ -197,7 +198,6 @@
 // ── CONSTANTES ──────────────────────────────────────────────────────────────
 const SB_URL='https://focgxgvavxykelzxcjcx.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY2d4Z3Zhdnh5a2VsenhjamN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDUwMzEsImV4cCI6MjA5NDU4MTAzMX0.NzfePlNP4Ue344SQUP5_DOFSDNrvhSf9vs31M1a81VU';
-// Headers construidos dinámicamente en función api()
 const FB_CONFIG={apiKey:"AIzaSyAF4DVO6dixlCmuFzetWhJI09GShdJOxFI",authDomain:"organizat-ui.firebaseapp.com",projectId:"organizat-ui",storageBucket:"organizat-ui.firebasestorage.app",messagingSenderId:"775835679422",appId:"1:775835679422:web:71bc7fd3baad473e8fbcef"};
 const VAPID_KEY="BCRNie9PDGIhjuirP6W0Ckx5bGYxtZ-hVhhTp4IiEAO4c7wyO1rM_fO9lExg0zImJEcJKbVE6fKcF4OlmjRGs6Q";
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -268,7 +268,11 @@ async function initFirebase(){
   try{
     firebase.initializeApp(FB_CONFIG);
     messaging=firebase.messaging();
-    if('serviceWorker' in navigator) await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    // Registrar el service worker manualmente para controlar la ruta
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      await messaging.useServiceWorker(reg);
+    }
     messaging.onMessage(payload=>{
       const{title,body}=payload.notification;
       showInAppNotif(title,body);
@@ -599,7 +603,6 @@ function openTaskModal(id,preDate){
   let opts=lists.map(l=>`<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${esc(l.name)}</option>`).join('');
   const dateVal=t?t.date:(preDate||todayStr());
   const timeVal=t?(t.time||''):'';
-  // Leer notify como booleano estricto
   const notifyVal=t?(t.notify===true):notifEnabled;
   const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
     <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${esc(t?t.title:'')}" placeholder="¿Qué tienes que hacer?"/></div>
@@ -623,7 +626,6 @@ function openTaskModal(id,preDate){
       <button class="btn-p" onclick="saveTask()">Guardar</button>
     </div>`;
   showModal(html);
-  // Rellenar textarea por JS para evitar problemas con caracteres especiales
   document.getElementById('fDesc').value=t?(t.description||''):'';
 }
  
@@ -635,7 +637,6 @@ function updateNotifHint(v){
 function openListModal(id){
   editListId=id||null;
   const l=id?lists.find(x=>x.id===id):null;
-  // Leer color desde datos reales de la lista, no desde selColor global
   selColor=l?l.color:PALETTE[0];
   selText=l?(l.text_color||autoTextColor(l.color)):autoTextColor(PALETTE[0]);
   const html=`<h3>${id?'Editar lista':'Nueva lista'}</h3>
@@ -647,7 +648,6 @@ function openListModal(id){
       <button class="btn-p" onclick="saveList()">Guardar</button>
     </div>`;
   showModal(html);
-  // Rellenar nombre por JS
   document.getElementById('lName').value=l?l.name:'';
 }
  
@@ -661,10 +661,11 @@ async function saveTask(){
   const time=document.getElementById('fTime').value||null;
   const notify=document.getElementById('fNotify').checked;
   if(editTaskId){
-    const t=tasks.find(x=>x.id===editTaskId);
+    const id=editTaskId; // ← captura antes de closeModal()
+    const t=tasks.find(x=>x.id===id);
     Object.assign(t,{title,date,list_id,description,time,notify});
     closeModal();render();scheduleNotifications();
-    await api('PATCH','tasks',{title,date,list_id,description,time,notify},editTaskId);
+    await api('PATCH','tasks',{title,date,list_id,description,time,notify},id);
   }else{
     const id='t'+Date.now();
     const newTask={id,list_id,title,date,description,time,notify,done:false};
@@ -672,28 +673,35 @@ async function saveTask(){
     await api('POST','tasks',newTask);
   }
 }
+ 
 async function deleteTask(){
-  const id=editTaskId;tasks=tasks.filter(x=>x.id!==id);closeModal();render();
+  const id=editTaskId; // ← captura antes de closeModal()
+  tasks=tasks.filter(x=>x.id!==id);
+  closeModal();render();
   await api('DELETE','tasks',null,id);
 }
+ 
 async function saveList(){
   const name=document.getElementById('lName').value.trim();
   if(!name)return;
   const color=selColor,text_color=selText;
   if(editListId){
-    const l=lists.find(x=>x.id===editListId);
+    const id=editListId; // ← captura antes de closeModal()
+    const l=lists.find(x=>x.id===id);
     Object.assign(l,{name,color,text_color});
     closeModal();render();
-    await api('PATCH','lists',{name,color,text_color},editListId);
+    await api('PATCH','lists',{name,color,text_color},id);
   }else{
     const id='l'+Date.now();
     lists.push({id,name,color,text_color});closeModal();render();
     await api('POST','lists',{id,name,color,text_color});
   }
 }
+ 
 async function deleteList(){
-  const id=editListId;
-  lists=lists.filter(x=>x.id!==id);tasks=tasks.filter(x=>x.list_id!==id);
+  const id=editListId; // ← captura antes de closeModal()
+  lists=lists.filter(x=>x.id!==id);
+  tasks=tasks.filter(x=>x.list_id!==id);
   if(activeListId===id)activeListId='all';
   closeModal();render();
   await api('DELETE','lists',null,id);
