@@ -12,12 +12,13 @@ firebase.initializeApp({
  
 const messaging = firebase.messaging();
  
-// Mostrar notificación cuando la app está en segundo plano o cerrada
+// Muestra la notificación cuando la app está en segundo plano
 messaging.onBackgroundMessage(payload => {
-  const { title, body, icon } = payload.notification;
+  const { title, body } = payload.notification || {};
+  if (!title) return;
   self.registration.showNotification(title, {
-    body,
-    icon: icon || '/icono_app.png',
+    body: body || '',
+    icon: '/icono_app.png',
     badge: '/icono_app.png',
     tag: payload.collapseKey || 'organizat'
   });
