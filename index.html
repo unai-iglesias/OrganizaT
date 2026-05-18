@@ -264,14 +264,14 @@ function setSyncing(s){document.getElementById('syncDot').className='sync-dot'+(
 function setError(){document.getElementById('syncDot').className='sync-dot error';document.getElementById('syncText').textContent='Error de conexión';}
  
 // ── FIREBASE ─────────────────────────────────────────────────────────────────
+let swRegistration=null;
 async function initFirebase(){
   try{
     firebase.initializeApp(FB_CONFIG);
     messaging=firebase.messaging();
-    // Registrar el service worker manualmente para controlar la ruta
+    // Registrar SW manualmente y guardarlo para pasarlo a getToken()
     if('serviceWorker' in navigator){
-      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-      await messaging.useServiceWorker(reg);
+      swRegistration=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
     }
     messaging.onMessage(payload=>{
       const{title,body}=payload.notification;
@@ -287,7 +287,10 @@ async function enableNotifications(ask=true){
     let perm=Notification.permission;
     if(perm==='default'&&ask)perm=await Notification.requestPermission();
     if(perm!=='granted'){alert('Permite las notificaciones en tu navegador.');return;}
-    const token=await messaging.getToken({vapidKey:VAPID_KEY});
+    // Se pasa el serviceWorkerRegistration para que Firebase use nuestro SW
+    const tokenOpts={vapidKey:VAPID_KEY};
+    if(swRegistration) tokenOpts.serviceWorkerRegistration=swRegistration;
+    const token=await messaging.getToken(tokenOpts);
     if(token){localStorage.setItem('ot_fcm_token',token);localStorage.setItem('ot_notif','on');notifEnabled=true;scheduleNotifications();updateNotifUI();}
   }catch(e){console.warn('Error notificaciones:',e);}
 }
