@@ -1086,7 +1086,13 @@ function changeAvisoType(i,type){
   renderAvisoList();
 }
 function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
-function changeAvisoCustomDate(i,val){modalAvisos[i].custom_date=val;}
+function changeAvisoCustomDate(i,val){
+  modalAvisos[i].custom_date=val;
+  // Limpiar error si lo había
+  document.getElementById('aviso-custom-err')?.remove();
+  const inputs=document.querySelectorAll('.aviso-custom-row input[type="date"]');
+  inputs.forEach(el=>el.style.border='');
+}
 function toggleAviso(i,checked){modalAvisos[i].enabled=checked;renderAvisoList();}
 function removeAviso(i){modalAvisos.splice(i,1);renderAvisoList();}
 function addAviso(){
@@ -1119,10 +1125,26 @@ async function saveTask(){
   const date=document.getElementById('fDate').value;
   const list_id=document.getElementById('fList').value;
   if(!title||!date)return;
+  const notify=document.getElementById('fNotify').checked;
+  // Validar que avisos de tipo custom_date tengan fecha asignada
+  if(notify){
+    const missing=modalAvisos.find(a=>a.enabled&&a.type==='custom_date'&&!a.custom_date);
+    if(missing){
+      const dateInput=document.querySelector('.aviso-custom-row input[type="date"]');
+      if(dateInput){dateInput.style.border='1.5px solid #A32D2D';dateInput.focus();}
+      const err=document.getElementById('aviso-custom-err');
+      if(!err){
+        const el=document.createElement('div');
+        el.id='aviso-custom-err';
+        el.style.cssText='font-size:11px;color:#A32D2D;margin-top:4px;padding:0 2px';
+        el.textContent='⚠️ El aviso de día personalizado necesita una fecha.';
+        document.getElementById('avisoContainer')?.appendChild(el);
+      }
+      return;
+    }
+  }
   const description=document.getElementById('fDesc').value.trim();
   const time=document.getElementById('fTime').value||null;
-  const notify=document.getElementById('fNotify').checked;
-  const avisos=JSON.parse(JSON.stringify(modalAvisos));
   if(editTaskId){
     const id=editTaskId;
     const t=tasks.find(x=>x.id===id);
