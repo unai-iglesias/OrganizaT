@@ -442,8 +442,7 @@ async function cleanCompleted(){
 async function loadAll(){
   const[l,t,n]=await Promise.all([api('GET','lists'),api('GET','tasks'),api('GET','notes')]);
   lists=l||[];tasks=t||[];notes=n||[];
-  const pinnedIds=getPinnedIds();
-  notes.forEach(note=>note.pinned=pinnedIds.includes(note.id));
+  // pinned viene directamente de Supabase, no hace falta localStorage
   await cleanCompleted();
   document.getElementById('loader').style.display='none';
   render();scheduleNotifications();
@@ -681,16 +680,11 @@ function updateFmtButtons(){
   });
 }
  
-function getPinnedIds(){try{return JSON.parse(localStorage.getItem('ot_pinned')||'[]');}catch{return[];}}
-function savePinnedIds(ids){localStorage.setItem('ot_pinned',JSON.stringify(ids));}
 function togglePin(id){
   const n=notes.find(x=>x.id===id);if(!n)return;
   n.pinned=!n.pinned;
-  const ids=getPinnedIds();
-  if(n.pinned){if(!ids.includes(id))ids.push(id);}
-  else{const i=ids.indexOf(id);if(i>-1)ids.splice(i,1);}
-  savePinnedIds(ids);
   renderNotesList();renderSidebarNotes();
+  api('PATCH','notes',{pinned:n.pinned},id);
 }
 function createNote(){
   const id='n'+Date.now(),color=PALETTE[0],now=new Date().toISOString();
