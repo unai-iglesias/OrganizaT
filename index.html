@@ -94,6 +94,10 @@
   .notes-area{padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-content:start}
   .note-card{border-radius:var(--radius-lg);padding:14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;gap:8px;transition:transform .12s,box-shadow .12s}
   .note-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+  .note-pin-btn{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0;transition:opacity .15s;line-height:1}
+  .note-card:hover .note-pin-btn{opacity:1}
+  .note-card.pinned .note-pin-btn{opacity:1;background:rgba(0,0,0,.25)}
+  .note-card{position:relative}
   .note-card-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .note-card-preview{font-size:12px;opacity:.75;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;flex:1;line-height:1.5}
   .note-card-date{font-size:10px;opacity:.55;margin-top:auto}
@@ -507,7 +511,9 @@ function renderMain(){
       <span class="month-label" style="min-width:160px">${getNavLabel()}</span>
       <button class="nav-btn" onclick="navNext()">›</button>
     </div>`:''}
-    <button class="icon-btn" id="calViewBtn" onclick="cycleCalView()" title="Vista: ${CAL_VIEW_LABELS[curView==='list'?'cal':curView]} — clic para cambiar">${CAL_VIEW_ICONS[curView==='list'?'cal':curView]}</button>
+    ${curView!=='list'
+      ? `<button class="icon-btn" id="calViewBtn" onclick="cycleCalView()" title="Vista: ${CAL_VIEW_LABELS[curView]} — clic para cambiar">${CAL_VIEW_ICONS[curView]}</button>`
+      : ''}
     <button class="vtab${curView==='list'?' active':''}" onclick="toggleList()" style="margin-left:2px">Lista</button>`;
   if(curView==='cal') renderCalendar();
   else if(curView==='week') renderWeek();
@@ -584,19 +590,36 @@ function renderNotesMain(){activeNoteId?renderNoteEditor():renderNotesList();}
 function renderNotesList(){
   document.getElementById('mainHeader').innerHTML=`<div class="main-title-area"><span style="font-size:16px">📝</span><span class="main-title">Notas</span></div>`;
   const sorted=notes.slice().sort((a,b)=>b.updated_at.localeCompare(a.updated_at));
-  let html='<div class="notes-area"><button class="note-add-card" onclick="createNote()"><div style="font-size:24px">＋</div><div style="font-size:12px">Nueva nota</div></button>';
-  sorted.forEach(n=>{
+  const pinned=sorted.filter(n=>n.pinned);
+  const rest=sorted.filter(n=>!n.pinned);
+ 
+  function noteCard(n){
     const bg=n.color||PALETTE[0],fg=autoTextColor(bg);
     const date=new Date(n.updated_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
-    // Strip HTML for preview
     const tmp=document.createElement('div');tmp.innerHTML=n.content||'';
     const preview=tmp.textContent||tmp.innerText||'Nota vacía...';
-    html+=`<div class="note-card" style="background:${bg};color:${fg}" onclick="openNote('${n.id}')">
+    return `<div class="note-card${n.pinned?' pinned':''}" style="background:${bg};color:${fg}" onclick="openNote('${n.id}')">
+      <button class="note-pin-btn" onclick="event.stopPropagation();togglePin('${n.id}')" title="${n.pinned?'Desanclar':'Anclar'}">${n.pinned?'📌':'📍'}</button>
       <div class="note-card-title">${esc(n.title||'Sin título')}</div>
       <div class="note-card-preview">${esc(preview)}</div>
       <div class="note-card-date">${date}</div>
     </div>`;
-  });
+  }
+ 
+  let html='<div class="notes-area">';
+  if(pinned.length){
+    html+=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-bottom:2px">
+      <span style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase">📌 Ancladas</span>
+      <div style="flex:1;height:.5px;background:var(--border2)"></div>
+    </div>`;
+    pinned.forEach(n=>html+=noteCard(n));
+    html+=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:4px 0 2px">
+      <span style="font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase">Resto</span>
+      <div style="flex:1;height:.5px;background:var(--border2)"></div>
+    </div>`;
+  }
+  html+='<button class="note-add-card" onclick="createNote()"><div style="font-size:24px">＋</div><div style="font-size:12px">Nueva nota</div></button>';
+  rest.forEach(n=>html+=noteCard(n));
   document.getElementById('contentArea').innerHTML=html+'</div>';
 }
  
@@ -649,6 +672,12 @@ function updateFmtButtons(){
   });
 }
  
+function togglePin(id){
+  const n=notes.find(x=>x.id===id);if(!n)return;
+  n.pinned=!n.pinned;const now=new Date().toISOString();n.updated_at=now;
+  renderNotesList();renderSidebarNotes();
+  api('PATCH','notes',{pinned:n.pinned,updated_at:now},id);
+}
 function createNote(){
   const id='n'+Date.now(),color=PALETTE[0],now=new Date().toISOString();
   const newNote={id,title:'',content:'',color,created_at:now,updated_at:now};
