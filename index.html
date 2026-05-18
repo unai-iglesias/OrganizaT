@@ -241,11 +241,11 @@
 <div class="overlay" id="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modalBox"></div>
 </div>
- 
+
 <!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
- 
+
 <script>
 // ── CONSTANTES ──────────────────────────────────────────────────────────────
 const SB_URL='https://focgxgvavxykelzxcjcx.supabase.co';
@@ -255,7 +255,7 @@ const VAPID_KEY="BCRNie9PDGIhjuirP6W0Ckx5bGYxtZ-hVhhTp4IiEAO4c7wyO1rM_fO9lExg0zI
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_S=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 const PALETTE=['#378ADD','#185FA5','#A32D2D','#C0392B','#BA7517','#E67E22','#639922','#27AE60','#533AB7','#8E44AD','#0F6E56','#16A085','#993556','#2C3E50','#7F8C8D','#D35400'];
- 
+
 // ── ESTADO ───────────────────────────────────────────────────────────────────
 const today=new Date();
 let curYear=today.getFullYear(),curMonth=today.getMonth();
@@ -267,7 +267,7 @@ let lists=[],tasks=[],notes=[],dragTaskId=null;
 let messaging=null,notifEnabled=false;
 let activeNoteId=null,noteAutoSaveTimer=null;
 let notifTimers=[];
- 
+
 // ── AVISOS POR DEFECTO ────────────────────────────────────────────────────────
 function defaultAvisos(taskTime){
   const avisos=[
@@ -286,7 +286,7 @@ function avisoLabel(a){
   return'';
 }
 const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',before_1h:'⏰',before_30m:'⏰',custom_date:'📆'};
- 
+
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function autoTextColor(hex){
   if(!hex||hex.length<7)return'#f0efe9';
@@ -301,13 +301,13 @@ function getListColor(listId){
   return{c:l.color,t:l.text_color||autoTextColor(l.color)};
 }
 function visibleTasks(){return activeListId==='all'?tasks:tasks.filter(t=>t.list_id===activeListId);}
- 
+
 // ── TEMA ─────────────────────────────────────────────────────────────────────
 const THEMES=['auto','light','dark'],THEME_ICONS={auto:'🌗',light:'☀️',dark:'🌙'};
 let curTheme=localStorage.getItem('ot_theme')||'auto';
 function applyTheme(){document.documentElement.className='theme-'+curTheme;document.getElementById('themeBtn').textContent=THEME_ICONS[curTheme];}
 function cycleTheme(){curTheme=THEMES[(THEMES.indexOf(curTheme)+1)%THEMES.length];localStorage.setItem('ot_theme',curTheme);applyTheme();}
- 
+
 // ── VISTA CALENDARIO (ciclo) ──────────────────────────────────────────────────
 const CAL_VIEWS=['cal','week','day','list'];
 const CAL_CYCLE=['cal','week','day'];
@@ -325,7 +325,7 @@ function cycleCalView(){
   switchView(next);
   updateCalViewBtn();
 }
- 
+
 // ── API SUPABASE ──────────────────────────────────────────────────────────────
 async function api(method,table,body,id){
   setSyncing(true);
@@ -352,7 +352,7 @@ async function api(method,table,body,id){
 }
 function setSyncing(s){document.getElementById('syncDot').className='sync-dot'+(s?' syncing':'');document.getElementById('syncText').textContent=s?'Sincronizando...':'Sincronizado';}
 function setError(){document.getElementById('syncDot').className='sync-dot error';document.getElementById('syncText').textContent='Error de conexión';}
- 
+
 // ── FIREBASE ─────────────────────────────────────────────────────────────────
 let swRegistration=null;
 async function initFirebase(){
@@ -435,7 +435,7 @@ function scheduleOne(when,now,title,body,tag){
   const diff=when.getTime()-now.getTime();
   if(diff>0)notifTimers.push(setTimeout(()=>{if(Notification.permission==='granted')new Notification(title,{body,icon:'/icono_app.png',tag});},diff));
 }
- 
+
 // ── CARGA DE DATOS ────────────────────────────────────────────────────────────
 async function cleanCompleted(){
   const ts=todayStr();
@@ -450,13 +450,13 @@ async function loadAll(){
   document.getElementById('loader').style.display='none';
   render();scheduleNotifications();
 }
- 
+
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(){
   if(curSection==='tasks'){renderSidebarTasks();renderMain();}
   else{renderSidebarNotes();renderNotesMain();}
 }
- 
+
 function renderSidebarTasks(){
   document.getElementById('sbLabel').textContent='Listas';
   document.getElementById('sbAddMain').innerHTML='<span style="font-size:16px">＋</span> Nueva tarea';
@@ -479,7 +479,7 @@ function renderSidebarTasks(){
   });
   document.getElementById('listsArea').innerHTML=html;
 }
- 
+
 function renderSidebarNotes(){
   document.getElementById('sbLabel').textContent='Notas';
   document.getElementById('sbAddMain').innerHTML='<span style="font-size:16px">＋</span> Nueva nota';
@@ -494,7 +494,7 @@ function renderSidebarNotes(){
   });
   document.getElementById('listsArea').innerHTML=html;
 }
- 
+
 function getNavLabel(){
   if(curView==='cal') return `${MONTHS[curMonth]} ${curYear}`;
   if(curView==='week'){
@@ -531,7 +531,7 @@ function renderMain(){
   else if(curView==='day') renderDay();
   else renderList();
 }
- 
+
 function renderCalendar(){
   const first=new Date(curYear,curMonth,1);
   let startDay=first.getDay()-1;if(startDay<0)startDay=6;
@@ -563,7 +563,7 @@ function renderCalendar(){
   }
   document.getElementById('contentArea').innerHTML=html+'</div>';
 }
- 
+
 function renderList(){
   const vtasks=visibleTasks().filter(t=>t.date)
     .sort((a,b)=>{const dc=a.date.localeCompare(b.date);return dc!==0?dc:(a.time||'').localeCompare(b.time||'');});
@@ -594,16 +594,16 @@ function renderList(){
   }
   document.getElementById('contentArea').innerHTML=html+'</div>';
 }
- 
+
 // ── NOTAS ─────────────────────────────────────────────────────────────────────
 function renderNotesMain(){activeNoteId?renderNoteEditor():renderNotesList();}
- 
+
 function renderNotesList(){
   document.getElementById('mainHeader').innerHTML=`<div class="main-title-area"><span style="font-size:16px">📝</span><span class="main-title">Notas</span></div>`;
   const sorted=notes.slice().sort((a,b)=>b.updated_at.localeCompare(a.updated_at));
   const pinned=sorted.filter(n=>n.pinned);
   const rest=sorted.filter(n=>!n.pinned);
- 
+
   function noteCard(n){
     const bg=n.color||PALETTE[0],fg=autoTextColor(bg);
     const date=new Date(n.updated_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
@@ -616,7 +616,7 @@ function renderNotesList(){
       <div class="note-card-date">${date}</div>
     </div>`;
   }
- 
+
   let html='<div class="notes-area">';
   if(pinned.length){
     html+=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-bottom:2px">
@@ -633,7 +633,7 @@ function renderNotesList(){
   rest.forEach(n=>html+=noteCard(n));
   document.getElementById('contentArea').innerHTML=html+'</div>';
 }
- 
+
 function renderNoteEditor(){
   const n=notes.find(x=>x.id===activeNoteId);
   if(!n){activeNoteId=null;renderNotesList();return;}
@@ -643,7 +643,7 @@ function renderNoteEditor(){
     <input class="note-title-input" id="noteTitleInput" placeholder="Título de la nota" oninput="scheduleNoteSave()"/>
     <button class="btn-d" style="font-size:12px;padding:5px 10px" onclick="deleteNote('${n.id}')">🗑 Eliminar</button>`;
   document.getElementById('noteTitleInput').value=n.title||'';
- 
+
   let paletteHtml=PALETTE.map(c=>`<div class="note-color-dot${c===bg?' sel':''}" style="background:${c}" onclick="setNoteColor('${n.id}','${c}')"></div>`).join('');
   document.getElementById('contentArea').innerHTML=`
     <div class="note-editor">
@@ -668,21 +668,21 @@ function renderNoteEditor(){
   range.selectNodeContents(editor);range.collapse(false);
   sel.removeAllRanges();sel.addRange(range);
 }
- 
+
 function fmtNote(cmd){
   document.getElementById('noteRichEditor')?.focus();
   document.execCommand(cmd,false,null);
   updateFmtButtons();
   scheduleNoteSave();
 }
- 
+
 function updateFmtButtons(){
   ['bold','italic','underline'].forEach(cmd=>{
     const btn=document.getElementById('fmt'+cmd.charAt(0).toUpperCase()+cmd.slice(1));
     if(btn)btn.classList.toggle('active',document.queryCommandState(cmd));
   });
 }
- 
+
 function togglePin(id){
   const n=notes.find(x=>x.id===id);if(!n)return;
   n.pinned=!n.pinned;
@@ -727,7 +727,7 @@ async function saveNote(){
   const info=document.getElementById('noteSaveInfo');
   if(info)info.textContent='Guardado ✓';
 }
- 
+
 // ── SECCIONES / NAVEGACIÓN ───────────────────────────────────────────────────
 function switchSection(section){
   curSection=section;activeNoteId=null;
@@ -751,7 +751,7 @@ function getCurDay(){
 }
 function syncMonthFromWeek(){const ws=getWeekStart();curYear=ws.getFullYear();curMonth=ws.getMonth();}
 function syncMonthFromDay(){const d=getCurDay();curYear=d.getFullYear();curMonth=d.getMonth();}
- 
+
 function navPrev(){
   if(curView==='cal'){curMonth--;if(curMonth<0){curMonth=11;curYear--;}}
   else if(curView==='week'){const ws=getWeekStart();ws.setDate(ws.getDate()-7);curWeekStart=ws.getTime();syncMonthFromWeek();}
@@ -796,7 +796,7 @@ function toggleList(){
     switchView('list');
   }
 }
- 
+
 // ── VISTA SEMANA ──────────────────────────────────────────────────────────────
 function renderWeek(){
   const ws=getWeekStart();
@@ -807,7 +807,7 @@ function renderWeek(){
   for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);days.push(d);}
   const HOURS=Array.from({length:24},(_,i)=>i);
   const DAYS_FULL=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
- 
+
   // Separate timed vs all-day tasks
   const timedMap={};const alldayMap={};
   days.forEach(d=>{const ds=dateStr(d);timedMap[ds]=[];alldayMap[ds]=[];});
@@ -816,7 +816,7 @@ function renderWeek(){
     if(t.time) timedMap[t.date].push(t);
     else alldayMap[t.date].push(t);
   });
- 
+
   let html='<div style="overflow:auto;height:100%"><div class="week-grid" style="min-width:520px">';
   // Corner + headers
   html+='<div class="week-corner" style="border-bottom:.5px solid var(--border2)"></div>';
@@ -859,7 +859,7 @@ function renderWeek(){
   document.getElementById('contentArea').innerHTML=html;
   scrollToNowOrMorning();
 }
- 
+
 // ── VISTA DÍA ─────────────────────────────────────────────────────────────────
 function renderDay(){
   const d=getCurDay();
@@ -869,7 +869,7 @@ function renderDay(){
   const timed=vtasks.filter(t=>t.time).sort((a,b)=>a.time.localeCompare(b.time));
   const allday=vtasks.filter(t=>!t.time);
   const HOURS=Array.from({length:24},(_,i)=>i);
- 
+
   let html='<div style="overflow:auto;height:100%"><div class="day-view-grid" style="min-width:300px">';
   // All-day header
   html+='<div style="background:var(--surface);border-bottom:.5px solid var(--border2);display:flex;align-items:center;justify-content:flex-end;padding:4px 6px;font-size:9px;color:var(--text3)">todo el día</div>';
@@ -883,7 +883,7 @@ function renderDay(){
     html+='<span class="day-view-allday-label">Sin tareas sin hora</span>';
   }
   html+='</div>';
- 
+
   // Hour rows
   const nowDate=new Date();
   HOURS.forEach(h=>{
@@ -911,7 +911,7 @@ function renderDay(){
   document.getElementById('contentArea').innerHTML=html;
   scrollToNowOrMorning();
 }
- 
+
 function scrollToNowOrMorning(){
   requestAnimationFrame(()=>{
     const ca=document.getElementById('contentArea');
@@ -932,7 +932,7 @@ function toggleSidebar(){
   const sb=document.getElementById('sidebar'),btn=document.getElementById('expandBtn');
   sb.classList.toggle('collapsed');btn.classList.toggle('visible',sb.classList.contains('collapsed'));
 }
- 
+
 // ── DRAG & DROP ───────────────────────────────────────────────────────────────
 function handleDragStart(e,id){dragTaskId=id;e.target.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
 function handleDragEnd(e){e.target.classList.remove('dragging');dragTaskId=null;document.querySelectorAll('.day-cell').forEach(c=>c.classList.remove('drag-over'));}
@@ -947,14 +947,14 @@ async function handleDrop(e,dateStr){
   await api('PATCH','tasks',{date:dateStr},dragTaskId);
 }
 function handleDayClick(e,ds){if(e.target.classList.contains('cal-task'))return;openTaskModal(null,ds);}
- 
+
 async function toggleDone(id,e){
   e.stopPropagation();
   const t=tasks.find(x=>x.id===id);if(!t)return;
   t.done=!t.done;render();
   await api('PATCH','tasks',{done:t.done},id);
 }
- 
+
 // ── COLOR PICKER ──────────────────────────────────────────────────────────────
 function buildColorPicker(currentColor){
   let html='<div class="color-picker-wrap"><div class="color-presets">';
@@ -975,14 +975,20 @@ function pickPreset(el){
 }
 function pickCustom(input){selColor=input.value;selText=autoTextColor(selColor);document.querySelectorAll('.pc').forEach(e=>e.classList.remove('sel'));updateColorPreview();}
 function updateColorPreview(){const p=document.getElementById('colorPreview');if(p){p.style.background=selColor;p.style.color=selText;p.style.webkitTextFillColor=selText;}}
- 
+
 // ── MODALES ───────────────────────────────────────────────────────────────────
+function clearTitleErr(){
+  const inp=document.getElementById('fTitle');
+  const err=document.getElementById('fTitleErr');
+  if(inp) inp.style.border='';
+  if(err) err.style.display='none';
+}
 function showModal(html){document.getElementById('modalBox').innerHTML=html;document.getElementById('overlay').style.display='flex';}
 function closeModal(){document.getElementById('overlay').style.display='none';editTaskId=null;editListId=null;}
- 
+
 // estado temporal de avisos mientras el modal está abierto
 let modalAvisos=[];
- 
+
 function openTaskModal(id,preDate){
   editTaskId=id||null;
   const t=id?tasks.find(x=>x.id===id):null;
@@ -994,7 +1000,8 @@ function openTaskModal(id,preDate){
   // Inicializar avisos temporales
   modalAvisos=t?.avisos?JSON.parse(JSON.stringify(t.avisos)):defaultAvisos(timeVal);
   const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
-    <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${esc(t?t.title:'')}" placeholder="¿Qué tienes que hacer?"/></div>
+    <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${esc(t?t.title:'')}" placeholder="¿Qué tienes que hacer?" oninput="clearTitleErr()"/>
+    <div id="fTitleErr" style="display:none;font-size:11px;color:#A32D2D;margin-top:4px">⚠️ El título es obligatorio para guardar la tarea.</div></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
     <div class="fg-row">
       <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
@@ -1017,7 +1024,7 @@ function openTaskModal(id,preDate){
   document.getElementById('fDesc').value=t?(t.description||''):'';
   renderAvisoList();
 }
- 
+
 function renderAvisoList(){
   const enabled=document.getElementById('fNotify')?.checked;
   const container=document.getElementById('avisoContainer');
@@ -1064,7 +1071,7 @@ function renderAvisoList(){
   html+=`<button class="add-aviso-btn" onclick="addAviso()" ${canAdd?'':'disabled'}><span style="font-size:16px">＋</span> Añadir aviso${canAdd?'':' (máx. 3)'}</button>`;
   container.innerHTML=html;
 }
- 
+
 function onTaskTimeChange(val){
   // Si se pone/quita hora, actualizar tipos before_* que ya no apliquen
   if(!val){
@@ -1103,7 +1110,7 @@ function addAviso(){
   modalAvisos.push({id:'a'+Date.now(),type:'same_day',hour:'09:00',enabled:true});
   renderAvisoList();
 }
- 
+
 function openListModal(id){
   editListId=id||null;
   const l=id?lists.find(x=>x.id===id):null;
@@ -1120,7 +1127,7 @@ function openListModal(id){
   showModal(html);
   document.getElementById('lName').value=l?l.name:'';
 }
- 
+
 // ── GUARDAR / BORRAR ──────────────────────────────────────────────────────────
 async function saveTask(){
   const title=document.getElementById('fTitle').value.trim();
@@ -1130,9 +1137,21 @@ async function saveTask(){
   const time=document.getElementById('fTime').value||null;
   const notify=document.getElementById('fNotify').checked;
   const avisos=JSON.parse(JSON.stringify(modalAvisos));
- 
-  if(!title||!date)return;
- 
+
+  // Mostrar error si falta título
+  const titleInput=document.getElementById('fTitle');
+  const titleErr=document.getElementById('fTitleErr');
+  if(!title){
+    titleInput.style.border='1.5px solid #A32D2D';
+    titleInput.focus();
+    if(titleErr) titleErr.style.display='block';
+    return;
+  } else {
+    titleInput.style.border='';
+    if(titleErr) titleErr.style.display='none';
+  }
+  if(!date)return;
+
   // Validar avisos de tipo custom_date solo si las notificaciones están activas
   if(notify){
     const todayStr2=todayStr();
@@ -1174,10 +1193,10 @@ async function saveTask(){
       }
     }
   }
- 
+
   // Limpiar cualquier error previo
   document.getElementById('aviso-custom-err')?.remove();
- 
+
   if(editTaskId){
     const id=editTaskId;
     const t=tasks.find(x=>x.id===id);
@@ -1191,14 +1210,14 @@ async function saveTask(){
     await api('POST','tasks',newTask);
   }
 }
- 
+
 async function deleteTask(){
   const id=editTaskId; // ← captura antes de closeModal()
   tasks=tasks.filter(x=>x.id!==id);
   closeModal();render();
   await api('DELETE','tasks',null,id);
 }
- 
+
 async function saveList(){
   const name=document.getElementById('lName').value.trim();
   if(!name)return;
@@ -1215,7 +1234,7 @@ async function saveList(){
     await api('POST','lists',{id,name,color,text_color});
   }
 }
- 
+
 async function deleteList(){
   const id=editListId; // ← captura antes de closeModal()
   lists=lists.filter(x=>x.id!==id);
@@ -1224,7 +1243,7 @@ async function deleteList(){
   closeModal();render();
   await api('DELETE','lists',null,id);
 }
- 
+
 // ── ARRANQUE ──────────────────────────────────────────────────────────────────
 applyTheme();
 initFirebase().then(()=>loadAll());
