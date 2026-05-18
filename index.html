@@ -48,16 +48,24 @@
   .notif-badge.on{display:block}
  
   .layout{display:flex;flex:1;overflow:hidden}
+ 
+  /* SIDEBAR */
   .sidebar{width:220px;min-width:220px;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.2s ease,min-width 0.2s ease}
   .sidebar.collapsed{width:0;min-width:0;border-right:none}
   .sb-header{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px;flex-shrink:0}
-  .sb-section{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase}
+  .sb-section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase}
   .collapse-btn{width:22px;height:22px;border-radius:6px;border:0.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:background 0.12s}
   .collapse-btn:hover{background:var(--surface2);color:var(--text)}
   .expand-btn{width:28px;height:28px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--surface);cursor:pointer;display:none;align-items:center;justify-content:center;color:var(--text2);font-size:15px;transition:background 0.12s;flex-shrink:0}
   .expand-btn.visible{display:flex}
   .expand-btn:hover{background:var(--surface2)}
   .lists-scroll{flex:1;overflow-y:auto;padding:0 8px}
+ 
+  /* NAV TABS EN SIDEBAR */
+  .sb-nav{display:flex;gap:3px;padding:6px 8px;flex-shrink:0}
+  .sb-nav-btn{flex:1;padding:5px 0;border-radius:var(--radius);border:0.5px solid var(--border);background:none;font-size:11px;cursor:pointer;color:var(--text2);font-family:inherit;transition:all 0.12s;text-align:center}
+  .sb-nav-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:500}
+ 
   .list-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px;transition:background 0.12s;user-select:none}
   .list-item:hover,.list-item.active{background:var(--surface2)}
   .list-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
@@ -65,15 +73,17 @@
   .list-count{font-size:11px;color:var(--text3);background:var(--bg);border-radius:8px;padding:1px 7px;min-width:20px;text-align:center}
   .list-edit-btn{opacity:0;font-size:14px;color:var(--text3);cursor:pointer;padding:2px;border-radius:4px;transition:opacity 0.12s}
   .list-item:hover .list-edit-btn{opacity:1}
-  .sb-bottom{padding:8px;border-top:0.5px solid var(--border);display:flex;flex-direction:column;gap:3px}
+  .sb-bottom{padding:8px;border-top:0.5px solid var(--border);display:flex;flex-direction:column;gap:3px;flex-shrink:0}
   .add-list-btn{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;transition:background 0.12s;width:100%;border:none;background:none;font-family:inherit}
   .add-list-btn:hover{background:var(--surface2);color:var(--text)}
  
+  /* DATE SEPARATORS */
   .date-separator{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
   .date-separator:first-child{margin-top:0}
   .date-sep-label{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;letter-spacing:0.03em}
   .date-sep-line{flex:1;height:0.5px;background:var(--border2)}
  
+  /* MAIN */
   .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
   .main-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-wrap:wrap;flex-shrink:0}
   .main-title-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -87,6 +97,7 @@
   .vtab{padding:5px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:none;font-size:12px;cursor:pointer;color:var(--text2);font-family:inherit;transition:all 0.12s}
   .vtab.active{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:500}
  
+  /* CALENDAR */
   .content-area{flex:1;overflow:auto;padding:10px}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
   .day-name{text-align:center;font-size:11px;color:var(--text3);padding:4px;font-weight:500}
@@ -101,6 +112,7 @@
   .cal-task:active{cursor:grabbing}
   .cal-task.dragging{opacity:0.35}
  
+  /* LIST VIEW */
   .list-view-wrap{padding:2px}
   .add-task-top{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:var(--radius);border:0.5px dashed var(--border2);background:none;color:var(--text2);font-size:13px;cursor:pointer;margin-bottom:10px;width:100%;font-family:inherit;transition:background 0.12s}
   .add-task-top:hover{background:var(--surface);color:var(--text)}
@@ -108,10 +120,39 @@
   .task-row:hover{border-color:var(--border2)}
   .task-bar{width:3px;border-radius:2px;align-self:stretch;flex-shrink:0}
   .task-body{flex:1;min-width:0}
-  .task-title{font-size:13px;font-weight:500;color:var(--text)}
+  .task-title-text{font-size:13px;font-weight:500;color:var(--text)}
   .task-meta{font-size:11px;color:var(--text3);margin-top:3px}
   .check-btn{font-size:18px;cursor:pointer;flex-shrink:0;margin-top:1px;line-height:1;border:none;background:none}
  
+  /* NOTES */
+  .notes-area{padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-content:start}
+  .note-card{border-radius:var(--radius-lg);padding:14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;gap:8px;transition:transform 0.12s,box-shadow 0.12s;border:0.5px solid transparent}
+  .note-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+  .note-card-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .note-card-preview{font-size:12px;opacity:0.75;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;flex:1;line-height:1.5}
+  .note-card-date{font-size:10px;opacity:0.55;margin-top:auto}
+  .note-add-card{border-radius:var(--radius-lg);padding:14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:0.5px dashed var(--border2);background:none;color:var(--text3);transition:background 0.12s,color 0.12s;font-family:inherit;width:100%}
+  .note-add-card:hover{background:var(--surface);color:var(--text2)}
+  .note-add-icon{font-size:24px}
+ 
+  /* NOTE EDITOR */
+  .note-editor{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .note-editor-header{padding:10px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0}
+  .note-back-btn{padding:5px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+  .note-back-btn:hover{background:var(--surface2)}
+  .note-title-input{flex:1;border:none;background:none;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;outline:none;min-width:0}
+  .note-title-input::placeholder{color:var(--text3)}
+  .note-content-input{flex:1;border:none;background:none;font-size:13px;color:var(--text);font-family:inherit;outline:none;resize:none;padding:16px;line-height:1.7}
+  .note-content-input::placeholder{color:var(--text3)}
+  .note-editor-toolbar{padding:8px 16px;border-top:0.5px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surface);flex-shrink:0}
+  .note-color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.12s,transform 0.12s;flex-shrink:0}
+  .note-color-dot:hover{transform:scale(1.15)}
+  .note-color-dot.sel{border-color:var(--text)}
+  .note-delete-btn{margin-left:auto;padding:5px 10px;border-radius:var(--radius);border:0.5px solid #F09595;background:none;color:#A32D2D;font-size:12px;cursor:pointer;font-family:inherit}
+  .note-delete-btn:hover{background:#FCEBEB}
+  .note-save-info{font-size:11px;color:var(--text3);margin-left:auto}
+ 
+  /* MODAL */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
   .modal{background:var(--surface);border-radius:var(--radius-lg);border:0.5px solid var(--border2);padding:22px;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto}
   .modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
@@ -122,8 +163,12 @@
   .fg textarea{resize:vertical;min-height:55px}
   .fg-row{display:flex;gap:8px}
   .fg-row .fg{flex:1}
-  .notif-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);margin-bottom:11px}
+ 
+  .notif-section{border-top:0.5px solid var(--border2);margin:12px 0 11px;padding-top:12px}
+  .notif-section-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px}
+  .notif-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg);margin-bottom:8px}
   .notif-row-label{font-size:12px;color:var(--text2)}
+  .notif-hint{font-size:11px;color:var(--text3);line-height:1.6}
   .toggle{position:relative;width:36px;height:20px}
   .toggle input{opacity:0;width:0;height:0}
   .toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:10px;cursor:pointer;transition:background 0.2s}
@@ -183,16 +228,20 @@
 <div class="layout">
   <div class="sidebar" id="sidebar">
     <div class="sb-header">
-      <span class="sb-section">Listas</span>
+      <span class="sb-section-label" id="sbLabel">Listas</span>
       <button class="collapse-btn" onclick="toggleSidebar()">‹</button>
     </div>
+    <div class="sb-nav">
+      <button class="sb-nav-btn active" id="navTasks" onclick="switchSection('tasks')">Tareas</button>
+      <button class="sb-nav-btn" id="navNotes" onclick="switchSection('notes')">Notas</button>
+    </div>
     <div class="lists-scroll" id="listsArea"></div>
-    <div class="sb-bottom">
-      <button class="add-list-btn" onclick="openTaskModal()"><span style="font-size:16px">＋</span> Nueva tarea</button>
-      <button class="add-list-btn" onclick="openListModal()"><span style="font-size:16px;opacity:0.6">⊞</span> Nueva lista</button>
+    <div class="sb-bottom" id="sbBottom">
+      <button class="add-list-btn" id="sbAddMain" onclick="openTaskModal()"><span style="font-size:16px">＋</span> Nueva tarea</button>
+      <button class="add-list-btn" id="sbAddList" onclick="openListModal()"><span style="font-size:16px;opacity:0.6">⊞</span> Nueva lista</button>
     </div>
   </div>
-  <div class="main">
+  <div class="main" id="mainArea">
     <div class="main-header" id="mainHeader"></div>
     <div class="content-area" id="contentArea"></div>
   </div>
@@ -206,16 +255,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
  
-const FB_CONFIG = {
-  apiKey: "AIzaSyAF4DVO6dixlCmuFzetWhJI09GShdJOxFI",
-  authDomain: "organizat-ui.firebaseapp.com",
-  projectId: "organizat-ui",
-  storageBucket: "organizat-ui.firebasestorage.app",
-  messagingSenderId: "775835679422",
-  appId: "1:775835679422:web:71bc7fd3baad473e8fbcef"
+const FB_CONFIG={
+  apiKey:"AIzaSyAF4DVO6dixlCmuFzetWhJI09GShdJOxFI",
+  authDomain:"organizat-ui.firebaseapp.com",
+  projectId:"organizat-ui",
+  storageBucket:"organizat-ui.firebasestorage.app",
+  messagingSenderId:"775835679422",
+  appId:"1:775835679422:web:71bc7fd3baad473e8fbcef"
 };
-const VAPID_KEY = "BCRNie9PDGIhjuirP6W0Ckx5bGYxtZ-hVhhTp4IiEAO4c7wyO1rM_fO9lExg0zImJEcJKbVE6fKcF4OlmjRGs6Q";
- 
+const VAPID_KEY="BCRNie9PDGIhjuirP6W0Ckx5bGYxtZ-hVhhTp4IiEAO4c7wyO1rM_fO9lExg0zImJEcJKbVE6fKcF4OlmjRGs6Q";
 const SB_URL='https://focgxgvavxykelzxcjcx.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvY2d4Z3Zhdnh5a2VsenhjamN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMDUwMzEsImV4cCI6MjA5NDU4MTAzMX0.NzfePlNP4Ue344SQUP5_DOFSDNrvhSf9vs31M1a81VU';
 const HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
@@ -223,10 +271,10 @@ const HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_S=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
 const PALETTE=[
-  {c:'#378ADD'},{c:'#185FA5'},{c:'#A32D2D'},{c:'#C0392B'},
-  {c:'#BA7517'},{c:'#E67E22'},{c:'#639922'},{c:'#27AE60'},
-  {c:'#533AB7'},{c:'#8E44AD'},{c:'#0F6E56'},{c:'#16A085'},
-  {c:'#993556'},{c:'#2C3E50'},{c:'#7F8C8D'},{c:'#D35400'},
+  '#378ADD','#185FA5','#A32D2D','#C0392B',
+  '#BA7517','#E67E22','#639922','#27AE60',
+  '#533AB7','#8E44AD','#0F6E56','#16A085',
+  '#993556','#2C3E50','#7F8C8D','#D35400',
 ];
  
 function autoTextColor(hex){
@@ -237,11 +285,12 @@ function autoTextColor(hex){
  
 const today=new Date();
 let curYear=today.getFullYear(),curMonth=today.getMonth();
-let curView='cal',activeListId='all';
+let curView='cal',activeListId='all',curSection='tasks';
 let editTaskId=null,editListId=null;
-let selColor=PALETTE[0].c,selText=autoTextColor(PALETTE[0].c);
-let lists=[],tasks=[],dragTaskId=null;
+let selColor=PALETTE[0],selText=autoTextColor(PALETTE[0]);
+let lists=[],tasks=[],notes=[],dragTaskId=null;
 let messaging=null,notifEnabled=false;
+let activeNoteId=null,noteAutoSaveTimer=null;
  
 // TEMA
 const THEMES=['auto','light','dark'];
@@ -259,128 +308,7 @@ window.cycleTheme=function(){
 };
 applyTheme();
  
-// FIREBASE MESSAGING
-async function initFirebase(){
-  try{
-    const app=initializeApp(FB_CONFIG);
-    messaging=getMessaging(app);
- 
-    // Registrar service worker
-    if('serviceWorker' in navigator){
-      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    }
- 
-    // Escuchar notificaciones con la app abierta
-    onMessage(messaging, payload=>{
-      const {title,body}=payload.notification;
-      showInAppNotif(title,body);
-    });
- 
-    // Restaurar estado de notificaciones
-    const saved=localStorage.getItem('ot_notif');
-    if(saved==='on'){
-      await enableNotifications(false);
-    }
-    updateNotifUI();
-  }catch(e){
-    console.warn('Firebase no disponible:',e);
-  }
-}
- 
-async function enableNotifications(ask=true){
-  if(!messaging)return;
-  try{
-    let perm=Notification.permission;
-    if(perm==='default'&&ask) perm=await Notification.requestPermission();
-    if(perm!=='granted'){
-      alert('Necesitas permitir las notificaciones en tu navegador para activar esta función.');
-      return;
-    }
-    const token=await getToken(messaging,{vapidKey:VAPID_KEY});
-    if(token){
-      localStorage.setItem('ot_fcm_token',token);
-      localStorage.setItem('ot_notif','on');
-      notifEnabled=true;
-      scheduleNotifications();
-      updateNotifUI();
-    }
-  }catch(e){
-    console.warn('Error al activar notificaciones:',e);
-  }
-}
- 
-async function disableNotifications(){
-  notifEnabled=false;
-  localStorage.setItem('ot_notif','off');
-  // Cancelar todos los timers
-  notifTimers.forEach(t=>clearTimeout(t));
-  notifTimers=[];
-  updateNotifUI();
-}
- 
-window.toggleNotifications=async function(){
-  if(notifEnabled) await disableNotifications();
-  else await enableNotifications(true);
-};
- 
-function updateNotifUI(){
-  const btn=document.getElementById('notifBtn');
-  const badge=document.getElementById('notifBadge');
-  if(btn) btn.textContent=notifEnabled?'🔔':'🔕';
-  if(badge) badge.classList.toggle('on',!notifEnabled&&Notification.permission==='default');
-}
- 
-// Notificación visual dentro de la app (cuando está abierta)
-function showInAppNotif(title,body){
-  const el=document.createElement('div');
-  el.style.cssText=`position:fixed;top:16px;right:16px;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:999;max-width:300px;font-family:'DM Sans',sans-serif;animation:slideIn 0.3s ease`;
-  el.innerHTML=`<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔔 ${title}</div><div style="font-size:12px;color:var(--text2)">${body}</div>`;
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),5000);
-}
- 
-// Programar notificaciones para todas las tareas con notify=true
-let notifTimers=[];
-function scheduleNotifications(){
-  notifTimers.forEach(t=>clearTimeout(t));
-  notifTimers=[];
-  if(!notifEnabled)return;
-  const now=new Date();
- 
-  tasks.filter(t=>t.notify&&!t.done&&t.date).forEach(t=>{
-    const[ty,tm,td]=t.date.split('-').map(Number);
- 
-    // 1. Día anterior a las 9:00
-    const prev=new Date(ty,tm-1,td-1,9,0,0);
-    scheduleOne(prev,now,'📅 Mañana tienes una tarea',t.title,t.id+'_prev');
- 
-    // 2. Mismo día a las 8:00
-    const sameDay=new Date(ty,tm-1,td,8,0,0);
-    scheduleOne(sameDay,now,'☀️ Hoy tienes una tarea',t.title,t.id+'_day');
- 
-    // 3. 1 hora antes si tiene hora asignada
-    if(t.time){
-      const[h,m]=t.time.split(':').map(Number);
-      const taskTime=new Date(ty,tm-1,td,h,m,0);
-      const oneHourBefore=new Date(taskTime.getTime()-60*60*1000);
-      scheduleOne(oneHourBefore,now,'⏰ En 1 hora',t.title,t.id+'_hour');
-    }
-  });
-}
- 
-function scheduleOne(when,now,title,body,tag){
-  const diff=when.getTime()-now.getTime();
-  if(diff>0){
-    const timer=setTimeout(()=>{
-      if(Notification.permission==='granted'){
-        new Notification(title,{body,icon:'/icono_app.png',tag});
-      }
-    },diff);
-    notifTimers.push(timer);
-  }
-}
- 
-// API SUPABASE
+// API
 async function api(method,table,body,id){
   setSyncing(true);
   try{
@@ -401,6 +329,93 @@ function setError(){
   document.getElementById('syncText').textContent='Error de conexión';
 }
  
+// FIREBASE
+async function initFirebase(){
+  try{
+    const app=initializeApp(FB_CONFIG);
+    messaging=getMessaging(app);
+    if('serviceWorker' in navigator){
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    }
+    onMessage(messaging,payload=>{
+      const{title,body}=payload.notification;
+      showInAppNotif(title,body);
+    });
+    const saved=localStorage.getItem('ot_notif');
+    if(saved==='on') await enableNotifications(false);
+    updateNotifUI();
+  }catch(e){console.warn('Firebase no disponible:',e);}
+}
+async function enableNotifications(ask=true){
+  if(!messaging)return;
+  try{
+    let perm=Notification.permission;
+    if(perm==='default'&&ask)perm=await Notification.requestPermission();
+    if(perm!=='granted'){alert('Necesitas permitir las notificaciones en tu navegador.');return;}
+    const token=await getToken(messaging,{vapidKey:VAPID_KEY});
+    if(token){
+      localStorage.setItem('ot_fcm_token',token);
+      localStorage.setItem('ot_notif','on');
+      notifEnabled=true;
+      scheduleNotifications();
+      updateNotifUI();
+    }
+  }catch(e){console.warn('Error al activar notificaciones:',e);}
+}
+async function disableNotifications(){
+  notifEnabled=false;
+  localStorage.setItem('ot_notif','off');
+  notifTimers.forEach(t=>clearTimeout(t));
+  notifTimers=[];
+  updateNotifUI();
+}
+window.toggleNotifications=async function(){
+  if(notifEnabled)await disableNotifications();
+  else await enableNotifications(true);
+};
+function updateNotifUI(){
+  const btn=document.getElementById('notifBtn');
+  const badge=document.getElementById('notifBadge');
+  if(btn)btn.textContent=notifEnabled?'🔔':'🔕';
+  if(badge)badge.classList.toggle('on',!notifEnabled&&Notification.permission==='default');
+}
+function showInAppNotif(title,body){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;top:16px;right:16px;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:999;max-width:300px;font-family:inherit';
+  el.innerHTML=`<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">🔔 ${title}</div><div style="font-size:12px;color:var(--text2)">${body}</div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),5000);
+}
+let notifTimers=[];
+function scheduleNotifications(){
+  notifTimers.forEach(t=>clearTimeout(t));
+  notifTimers=[];
+  if(!notifEnabled)return;
+  const now=new Date();
+  tasks.filter(t=>t.notify&&!t.done&&t.date).forEach(t=>{
+    const[ty,tm,td]=t.date.split('-').map(Number);
+    // Día anterior 9:00
+    scheduleOne(new Date(ty,tm-1,td-1,9,0,0),now,'📅 Mañana tienes una tarea',t.title,t.id+'_prev');
+    // Mismo día 8:00
+    scheduleOne(new Date(ty,tm-1,td,8,0,0),now,'☀️ Hoy tienes una tarea',t.title,t.id+'_day');
+    // 1 hora antes si tiene hora
+    if(t.time){
+      const[h,m]=t.time.split(':').map(Number);
+      const oneHourBefore=new Date(ty,tm-1,td,h,m,0).getTime()-60*60*1000;
+      scheduleOne(new Date(oneHourBefore),now,'⏰ En 1 hora',t.title,t.id+'_hour');
+    }
+  });
+}
+function scheduleOne(when,now,title,body,tag){
+  const diff=when.getTime()-now.getTime();
+  if(diff>0){
+    notifTimers.push(setTimeout(()=>{
+      if(Notification.permission==='granted') new Notification(title,{body,icon:'/icono_app.png',tag});
+    },diff));
+  }
+}
+ 
+// DATOS
 async function cleanCompleted(){
   const ts=todayStr();
   const toDelete=tasks.filter(t=>t.done&&t.date&&t.date<ts);
@@ -409,26 +424,39 @@ async function cleanCompleted(){
     await api('DELETE','tasks',null,t.id);
   }
 }
- 
 async function loadAll(){
-  const[l,t]=await Promise.all([api('GET','lists'),api('GET','tasks')]);
-  lists=l||[];tasks=t||[];
+  const[l,t,n]=await Promise.all([api('GET','lists'),api('GET','tasks'),api('GET','notes')]);
+  lists=l||[];tasks=t||[];notes=n||[];
   await cleanCompleted();
   document.getElementById('loader').style.display='none';
   render();
   scheduleNotifications();
 }
  
+// COLOR DE LISTA — calculado en tiempo real siempre desde los datos
 function getListColor(listId){
   const l=lists.find(x=>x.id===listId);
-  return l?{c:l.color,t:l.text_color}:{c:'#888780',t:'#F1EFE8'};
+  if(!l)return{c:'#888780',t:'#F1EFE8'};
+  const c=l.color;
+  const t=l.text_color||autoTextColor(c);
+  return{c,t};
 }
+ 
 function visibleTasks(){return activeListId==='all'?tasks:tasks.filter(t=>t.list_id===activeListId);}
 function todayStr(){return`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;}
  
-function render(){renderSidebar();renderMain();}
+function render(){
+  if(curSection==='tasks'){renderSidebarTasks();renderMain();}
+  else{renderSidebarNotes();renderNotesMain();}
+}
  
-function renderSidebar(){
+// SECCIÓN TAREAS - SIDEBAR
+function renderSidebarTasks(){
+  document.getElementById('sbLabel').textContent='Listas';
+  document.getElementById('sbAddMain').innerHTML='<span style="font-size:16px">＋</span> Nueva tarea';
+  document.getElementById('sbAddMain').onclick=()=>openTaskModal();
+  document.getElementById('sbAddList').style.display='flex';
+ 
   const allCount=tasks.filter(t=>!t.done).length;
   let html=`<div class="list-item${activeListId==='all'?' active':''}" onclick="setList('all')">
     <div class="list-dot" style="background:var(--text3)"></div>
@@ -447,6 +475,29 @@ function renderSidebar(){
   document.getElementById('listsArea').innerHTML=html;
 }
  
+// SECCIÓN NOTAS - SIDEBAR
+function renderSidebarNotes(){
+  document.getElementById('sbLabel').textContent='Notas';
+  document.getElementById('sbAddMain').innerHTML='<span style="font-size:16px">＋</span> Nueva nota';
+  document.getElementById('sbAddMain').onclick=()=>createNote();
+  document.getElementById('sbAddList').style.display='none';
+ 
+  let html='';
+  if(!notes.length){
+    html='<div style="padding:12px;font-size:12px;color:var(--text3)">Sin notas aún</div>';
+  }else{
+    notes.slice().sort((a,b)=>b.updated_at.localeCompare(a.updated_at)).forEach(n=>{
+      const tc=autoTextColor(n.color||'#378ADD');
+      html+=`<div class="list-item${activeNoteId===n.id?' active':''}" onclick="openNote('${n.id}')">
+        <div class="list-dot" style="background:${n.color||'#378ADD'}"></div>
+        <span class="list-name">${n.title||'Sin título'}</span>
+      </div>`;
+    });
+  }
+  document.getElementById('listsArea').innerHTML=html;
+}
+ 
+// MAIN TAREAS
 function renderMain(){
   const activeList=lists.find(x=>x.id===activeListId);
   const dotColor=activeList?activeList.color:'var(--text3)';
@@ -493,15 +544,17 @@ function renderCalendar(){
       ondrop="handleDrop(event,'${ds}')">`;
     html+=`<div class="day-num">${d}</div>`;
     dt.slice(0,3).forEach(t=>{
+      // Calcular colores siempre desde la lista en tiempo real
       const lc=getListColor(t.list_id);
-      const tc=lc.t||autoTextColor(lc.c);
+      const bg=lc.c;
+      const fg=lc.t||autoTextColor(bg);
       html+=`<div class="cal-task"
-        style="background:${lc.c} !important;color:${tc} !important;-webkit-text-fill-color:${tc};${t.done?'opacity:0.4':''}"
+        style="background:${bg} !important;color:${fg} !important;-webkit-text-fill-color:${fg};${t.done?'opacity:0.4':''}"
         draggable="true"
         ondragstart="handleDragStart(event,'${t.id}')"
         ondragend="handleDragEnd(event)"
         onclick="event.stopPropagation();openTaskModal('${t.id}')"
-        title="${t.title}">${t.done?'✓ ':''}${t.time?'⏰ ':''}${t.title}</div>`;
+        title="${t.title}">${t.done?'✓ ':''}${t.time?'⏰ ':''}${t.notify?'🔔 ':''}${t.title}</div>`;
     });
     if(dt.length>3)html+=`<div style="font-size:9px;color:var(--text3);padding:0 2px">+${dt.length-3} más</div>`;
     html+='</div>';
@@ -523,6 +576,7 @@ function renderList(){
     let lastDate=null;
     vtasks.forEach(t=>{
       const lc=getListColor(t.list_id);
+      const bg=lc.c;
       const lname=lists.find(x=>x.id===t.list_id)?.name||'';
       const[y,m,d]=t.date.split('-');
       if(t.date!==lastDate){
@@ -534,19 +588,152 @@ function renderList(){
         html+=`<div class="date-separator"><span class="date-sep-label">${label}</span><div class="date-sep-line"></div></div>`;
       }
       const timeStr=t.time?`⏰ ${t.time} · `:'';
+      const notifStr=t.notify?'🔔 ':'';
       html+=`<div class="task-row" onclick="openTaskModal('${t.id}')">
-        <div class="task-bar" style="background:${lc.c}"></div>
+        <div class="task-bar" style="background:${bg}"></div>
         <div class="task-body">
-          <div class="task-title" style="${t.done?'text-decoration:line-through;opacity:0.45':''}">${t.title}</div>
-          <div class="task-meta">${timeStr}${lname?'<span style="color:'+lc.c+';font-weight:500">'+lname+'</span>':''}${t.description?(lname?' · ':'')+t.description:''}</div>
+          <div class="task-title-text" style="${t.done?'text-decoration:line-through;opacity:0.45':''}">${notifStr}${t.title}</div>
+          <div class="task-meta">${timeStr}${lname?'<span style="color:'+bg+';font-weight:500">'+lname+'</span>':''}${t.description?(lname?' · ':'')+t.description:''}</div>
         </div>
-        <button class="check-btn" onclick="toggleDone('${t.id}',event)" style="color:${t.done?lc.c:'var(--text3)'}">${t.done?'✓':'○'}</button>
+        <button class="check-btn" onclick="toggleDone('${t.id}',event)" style="color:${t.done?bg:'var(--text3)'}">${t.done?'✓':'○'}</button>
       </div>`;
     });
   }
   html+='</div>';
   document.getElementById('contentArea').innerHTML=html;
 }
+ 
+// NOTAS - MAIN
+function renderNotesMain(){
+  if(activeNoteId){
+    renderNoteEditor();
+  }else{
+    renderNotesList();
+  }
+}
+ 
+function renderNotesList(){
+  document.getElementById('mainHeader').innerHTML=`
+    <div class="main-title-area">
+      <span style="font-size:16px">📝</span>
+      <span class="main-title">Notas</span>
+    </div>`;
+  const sorted=notes.slice().sort((a,b)=>b.updated_at.localeCompare(a.updated_at));
+  let html='<div class="notes-area">';
+  html+=`<button class="note-add-card" onclick="createNote()">
+    <div class="note-add-icon">＋</div>
+    <div style="font-size:12px">Nueva nota</div>
+  </button>`;
+  sorted.forEach(n=>{
+    const bg=n.color||'#378ADD';
+    const fg=autoTextColor(bg);
+    const date=new Date(n.updated_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+    html+=`<div class="note-card" style="background:${bg};color:${fg}" onclick="openNote('${n.id}')">
+      <div class="note-card-title">${n.title||'Sin título'}</div>
+      <div class="note-card-preview">${n.content||'Nota vacía...'}</div>
+      <div class="note-card-date">${date}</div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('contentArea').innerHTML=html;
+}
+ 
+function renderNoteEditor(){
+  const n=notes.find(x=>x.id===activeNoteId);
+  if(!n){activeNoteId=null;renderNotesList();return;}
+  const bg=n.color||'#378ADD';
+  const fg=autoTextColor(bg);
+ 
+  document.getElementById('mainHeader').innerHTML=`
+    <button class="note-back-btn" onclick="closeNote()">‹ Notas</button>
+    <input class="note-title-input" id="noteTitleInput" value="${n.title||''}" placeholder="Título de la nota" oninput="scheduleNoteSave()"/>
+    <button class="btn-d" style="font-size:12px;padding:5px 10px" onclick="deleteNote('${n.id}')">🗑 Eliminar</button>`;
+ 
+  // Paleta de colores en la toolbar
+  let paletteHtml=PALETTE.map(c=>`<div class="note-color-dot${c===bg?' sel':''}" style="background:${c}" onclick="setNoteColor('${n.id}','${c}')"></div>`).join('');
+ 
+  document.getElementById('contentArea').innerHTML=`
+    <div class="note-editor">
+      <textarea class="note-content-input" id="noteContentInput" placeholder="Escribe aquí tu nota..."
+        oninput="scheduleNoteSave()">${n.content||''}</textarea>
+      <div class="note-editor-toolbar">
+        <span style="font-size:11px;color:var(--text3);margin-right:4px">Color:</span>
+        ${paletteHtml}
+        <span class="note-save-info" id="noteSaveInfo">Guardado</span>
+      </div>
+    </div>`;
+}
+ 
+window.createNote=async function(){
+  const id='n'+Date.now();
+  const color=PALETTE[0];
+  const now=new Date().toISOString();
+  const newNote={id,title:'',content:'',color,created_at:now,updated_at:now};
+  notes.push(newNote);
+  activeNoteId=id;
+  render();
+  await api('POST','notes',newNote);
+};
+ 
+window.openNote=function(id){
+  activeNoteId=id;
+  renderSidebarNotes();
+  renderNotesMain();
+};
+ 
+window.closeNote=function(){
+  activeNoteId=null;
+  render();
+};
+ 
+window.setNoteColor=async function(id,color){
+  const n=notes.find(x=>x.id===id);
+  if(!n)return;
+  n.color=color;
+  const now=new Date().toISOString();
+  n.updated_at=now;
+  renderNoteEditor();
+  renderSidebarNotes();
+  await api('PATCH','notes',{color,updated_at:now},id);
+};
+ 
+window.deleteNote=async function(id){
+  if(!confirm('¿Eliminar esta nota?'))return;
+  notes=notes.filter(x=>x.id!==id);
+  activeNoteId=null;
+  render();
+  await api('DELETE','notes',null,id);
+};
+ 
+window.scheduleNoteSave=function(){
+  if(noteAutoSaveTimer)clearTimeout(noteAutoSaveTimer);
+  const info=document.getElementById('noteSaveInfo');
+  if(info)info.textContent='Guardando...';
+  noteAutoSaveTimer=setTimeout(saveNote,1000);
+};
+ 
+async function saveNote(){
+  if(!activeNoteId)return;
+  const n=notes.find(x=>x.id===activeNoteId);
+  if(!n)return;
+  const title=document.getElementById('noteTitleInput')?.value||'';
+  const content=document.getElementById('noteContentInput')?.value||'';
+  const now=new Date().toISOString();
+  n.title=title;n.content=content;n.updated_at=now;
+  renderSidebarNotes();
+  await api('PATCH','notes',{title,content,updated_at:now},activeNoteId);
+  const info=document.getElementById('noteSaveInfo');
+  if(info)info.textContent='Guardado ✓';
+}
+ 
+// SECCIONES
+window.switchSection=function(section){
+  curSection=section;
+  activeNoteId=null;
+  document.getElementById('navTasks').classList.toggle('active',section==='tasks');
+  document.getElementById('navNotes').classList.toggle('active',section==='notes');
+  render();
+};
  
 // DRAG & DROP
 window.handleDragStart=function(e,id){dragTaskId=id;e.target.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
@@ -584,8 +771,8 @@ window.handleDayClick=function(e,ds){
 // COLOR PICKER
 function buildColorPicker(currentColor){
   let html='<div class="color-picker-wrap"><div class="color-presets">';
-  PALETTE.forEach(col=>{
-    html+=`<div class="pc${col.c===currentColor?' sel':''}" style="background:${col.c}" data-c="${col.c}" onclick="pickPreset(this)"></div>`;
+  PALETTE.forEach(c=>{
+    html+=`<div class="pc${c===currentColor?' sel':''}" style="background:${c}" data-c="${c}" onclick="pickPreset(this)"></div>`;
   });
   html+=`</div><div class="custom-color-row">
     <label>Otro color:</label>
@@ -619,19 +806,21 @@ function openTaskModal(id,preDate){
   let opts=lists.map(l=>`<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${l.name}</option>`).join('');
   const dateVal=t?t.date:(preDate||todayStr());
   const timeVal=t?(t.time||''):'';
-  const notifyVal=t?(t.notify!==false):notifEnabled;
-  const notifSection=notifEnabled?`
-    <div style="border-top:0.5px solid var(--border2);margin:12px 0 11px;padding-top:12px">
-      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">🔔 Notificaciones para esta tarea</div>
-      <div class="notif-row">
-        <span class="notif-row-label">Activar avisos</span>
-        <label class="toggle"><input type="checkbox" id="fNotify" ${notifyVal?'checked':''}><span class="toggle-slider"></span></label>
-      </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5">
-        📅 El día anterior a las 9:00<br>
-        ☀️ El mismo día a las 8:00${timeVal?'<br>⏰ 1 hora antes de la hora asignada':''}
-      </div>
-    </div>`:'';
+  // notify: si la tarea ya existe respeta su valor; si es nueva, activo por defecto si notifEnabled
+  const notifyVal=t?(t.notify===true||t.notify===null):notifEnabled;
+ 
+  const notifSection=`<div class="notif-section">
+    <div class="notif-section-title">🔔 Notificaciones</div>
+    <div class="notif-row">
+      <span class="notif-row-label">Activar avisos para esta tarea</span>
+      <label class="toggle"><input type="checkbox" id="fNotify" ${notifyVal?'checked':''}><span class="toggle-slider"></span></label>
+    </div>
+    <div class="notif-hint" id="notifHint" style="font-size:11px;color:var(--text3);line-height:1.6">
+      📅 El día anterior a las 9:00<br>
+      ☀️ El mismo día a las 8:00${timeVal?'<br>⏰ 1 hora antes de la hora asignada':''}
+    </div>
+  </div>`;
+ 
   const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
     <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${t?t.title:''}" placeholder="¿Qué tienes que hacer?"/></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
@@ -652,18 +841,17 @@ function openTaskModal(id,preDate){
 window.openTaskModal=openTaskModal;
  
 window.updateNotifHint=function(timeVal){
-  const hint=document.querySelector('.notif-hint');
-  if(!hint)return;
-  hint.innerHTML=`📅 El día anterior a las 9:00<br>☀️ El mismo día a las 8:00${timeVal?'<br>⏰ 1 hora antes de la hora asignada':''}`;
+  const hint=document.getElementById('notifHint');
+  if(hint)hint.innerHTML=`📅 El día anterior a las 9:00<br>☀️ El mismo día a las 8:00${timeVal?'<br>⏰ 1 hora antes de la hora asignada':''}`;
 };
  
 function openListModal(id){
   editListId=id||null;
   const l=id?lists.find(x=>x.id===id):null;
-  selColor=l?l.color:PALETTE[0].c;
-  selText=l?l.text_color:autoTextColor(selColor);
+  selColor=l?l.color:PALETTE[0];
+  selText=autoTextColor(selColor);
   const html=`<h3>${id?'Editar lista':'Nueva lista'}</h3>
-    <div class="fg"><label>Nombre</label><input type="text" id="lName" value="${l?l.name:''}" placeholder="Ej: Urgente, Fútbol, Trabajo..."/></div>
+    <div class="fg"><label>Nombre</label><input type="text" id="lName" value="${l?l.name:''}" placeholder="Ej: Urgente, Fútbol..."/></div>
     <div class="fg"><label>Color</label>${buildColorPicker(selColor)}</div>
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
@@ -686,8 +874,7 @@ window.saveTask=async function(){
   if(!title||!date)return;
   const description=document.getElementById('fDesc').value.trim();
   const time=document.getElementById('fTime').value||null;
-  const notifyEl=document.getElementById('fNotify');
-  const notify=notifyEl?notifyEl.checked:false;
+  const notify=document.getElementById('fNotify')?.checked||false;
   if(editTaskId){
     const t=tasks.find(x=>x.id===editTaskId);
     Object.assign(t,{title,date,list_id,description,time,notify});
@@ -700,15 +887,18 @@ window.saveTask=async function(){
     await api('POST','tasks',newTask);
   }
 };
+ 
 window.deleteTask=async function(){
   tasks=tasks.filter(x=>x.id!==editTaskId);
   const id=editTaskId;closeModal();render();
   await api('DELETE','tasks',null,id);
 };
+ 
 window.saveList=async function(){
   const name=document.getElementById('lName').value.trim();
   if(!name)return;
-  const color=selColor,text_color=selText;
+  const color=selColor;
+  const text_color=selText;
   if(editListId){
     const l=lists.find(x=>x.id===editListId);
     Object.assign(l,{name,color,text_color});
@@ -721,6 +911,7 @@ window.saveList=async function(){
     await api('POST','lists',newList);
   }
 };
+ 
 window.deleteList=async function(){
   const id=editListId;
   lists=lists.filter(x=>x.id!==id);
