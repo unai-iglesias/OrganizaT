@@ -280,9 +280,10 @@ function avisoLabel(a){
   if(a.type==='same_day')return`☀️ Mismo día a las ${a.hour}`;
   if(a.type==='before_1h')return`⏰ 1 hora antes`;
   if(a.type==='before_30m')return`⏰ 30 min antes`;
+  if(a.type==='custom_date')return`📆 ${a.custom_date||'?'} a las ${a.hour||'?'}`;
   return'';
 }
-const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',before_1h:'⏰',before_30m:'⏰'};
+const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',before_1h:'⏰',before_30m:'⏰',custom_date:'📆'};
  
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function autoTextColor(hex){
@@ -413,6 +414,10 @@ function scheduleNotifications(){
       }else if(a.type==='before_30m'&&t.time){
         const[h,m]=t.time.split(':').map(Number);
         when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-1800000);
+      }else if(a.type==='custom_date'&&a.custom_date&&a.hour){
+        const[cy,cm,cd]=a.custom_date.split('-').map(Number);
+        const[h,m]=a.hour.split(':').map(Number);
+        when=new Date(cy,cm-1,cd,h,m,0);
       }
       if(when){
         const label=avisoLabel(a);
@@ -435,6 +440,8 @@ async function cleanCompleted(){
 async function loadAll(){
   const[l,t,n]=await Promise.all([api('GET','lists'),api('GET','tasks'),api('GET','notes')]);
   lists=l||[];tasks=t||[];notes=n||[];
+  const pinnedIds=getPinnedIds();
+  notes.forEach(note=>note.pinned=pinnedIds.includes(note.id));
   await cleanCompleted();
   document.getElementById('loader').style.display='none';
   render();scheduleNotifications();
@@ -672,11 +679,16 @@ function updateFmtButtons(){
   });
 }
  
+function getPinnedIds(){try{return JSON.parse(localStorage.getItem('ot_pinned')||'[]');}catch{return[];}}
+function savePinnedIds(ids){localStorage.setItem('ot_pinned',JSON.stringify(ids));}
 function togglePin(id){
   const n=notes.find(x=>x.id===id);if(!n)return;
-  n.pinned=!n.pinned;const now=new Date().toISOString();n.updated_at=now;
+  n.pinned=!n.pinned;
+  const ids=getPinnedIds();
+  if(n.pinned){if(!ids.includes(id))ids.push(id);}
+  else{const i=ids.indexOf(id);if(i>-1)ids.splice(i,1);}
+  savePinnedIds(ids);
   renderNotesList();renderSidebarNotes();
-  api('PATCH','notes',{pinned:n.pinned,updated_at:now},id);
 }
 function createNote(){
   const id='n'+Date.now(),color=PALETTE[0],now=new Date().toISOString();
@@ -1012,8 +1024,9 @@ function renderAvisoList(){
   let html='<div class="aviso-list">';
   modalAvisos.forEach((a,i)=>{
     const emoji=AVISO_EMOJIS[a.type]||'🔔';
-    const needsHour=a.type==='prev_day'||a.type==='same_day'||a.type==='exact';
+    const needsHour=a.type==='prev_day'||a.type==='same_day';
     const needsTime=(a.type==='before_1h'||a.type==='before_30m')&&!hasTime;
+    const isCustom=a.type==='custom_date';
     html+=`<div class="aviso-item${a.enabled?'':' disabled'}">
       <span class="aviso-emoji">${emoji}</span>
       <select class="aviso-type-select" onchange="changeAvisoType(${i},this.value)">
@@ -1021,8 +1034,10 @@ function renderAvisoList(){
         <option value="same_day"${a.type==='same_day'?' selected':''}>Mismo día</option>
         ${hasTime?`<option value="before_1h"${a.type==='before_1h'?' selected':''}>1 hora antes</option>`:''}
         ${hasTime?`<option value="before_30m"${a.type==='before_30m'?' selected':''}>30 min antes</option>`:''}
+        <option value="custom_date"${a.type==='custom_date'?' selected':''}>Día personalizado</option>
       </select>
       ${needsHour?`<input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
+      ${isCustom?`<input class="aviso-time-input" style="width:110px" type="date" value="${a.custom_date||''}" onchange="changeAvisoCustomDate(${i},this.value)" title="Fecha del aviso"/><input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
       ${needsTime?`<span style="font-size:10px;color:var(--text3)">Requiere hora</span>`:''}
       <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
         <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
@@ -1050,9 +1065,11 @@ function changeAvisoType(i,type){
   modalAvisos[i].type=type;
   if(type==='prev_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
   if(type==='same_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='08:00';
+  if(type==='custom_date'){if(!modalAvisos[i].hour)modalAvisos[i].hour='09:00';if(!modalAvisos[i].custom_date)modalAvisos[i].custom_date='';}
   renderAvisoList();
 }
 function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
+function changeAvisoCustomDate(i,val){modalAvisos[i].custom_date=val;}
 function toggleAviso(i,checked){modalAvisos[i].enabled=checked;renderAvisoList();}
 function removeAviso(i){modalAvisos.splice(i,1);renderAvisoList();}
 function addAviso(){
