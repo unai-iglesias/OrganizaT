@@ -99,18 +99,25 @@
   .note-card-date{font-size:10px;opacity:.55;margin-top:auto}
   .note-add-card{border-radius:var(--radius-lg);padding:14px;cursor:pointer;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:.5px dashed var(--border2);background:none;color:var(--text3);transition:background .12s;font-family:inherit;width:100%}
   .note-add-card:hover{background:var(--surface);color:var(--text2)}
-  .note-content-input{flex:1;border:none;background:none;font-size:13px;color:var(--text);font-family:inherit;outline:none;resize:none;padding:16px;line-height:1.7;width:100%}
+  .note-content-input{flex:1;border:none;background:none;font-size:13px;color:var(--text);font-family:inherit;outline:none;resize:none;padding:16px;line-height:1.7;width:100%;overflow-y:auto}
   .note-content-input::placeholder{color:var(--text3)}
   .note-title-input{flex:1;border:none;background:none;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;outline:none;min-width:0}
   .note-title-input::placeholder{color:var(--text3)}
   .note-back-btn{padding:5px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
   .note-back-btn:hover{background:var(--surface2)}
-  .note-editor{flex:1;display:flex;flex-direction:column;overflow:hidden}
-  .note-editor-toolbar{padding:8px 16px;border-top:.5px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surface);flex-shrink:0}
+  .note-editor{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .note-editor-toolbar{padding:8px 16px;border-top:.5px solid var(--border);display:flex;align-items:center;gap:6px;background:var(--surface);flex-shrink:0;flex-wrap:wrap}
+  .note-fmt-btn{width:28px;height:28px;border-radius:6px;border:.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);transition:background .12s;flex-shrink:0;font-family:inherit}
+  .note-fmt-btn:hover{background:var(--surface2);color:var(--text)}
+  .note-fmt-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+  .note-toolbar-sep{width:.5px;height:18px;background:var(--border2);flex-shrink:0;margin:0 2px}
   .note-color-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .12s,transform .12s;flex-shrink:0}
   .note-color-dot:hover{transform:scale(1.15)}
   .note-color-dot.sel{border-color:var(--text)}
   .note-save-info{font-size:11px;color:var(--text3);margin-left:auto}
+  /* Rich text note editor */
+  .note-rich-editor{flex:1;border:none;background:none;font-size:13px;color:var(--text);font-family:inherit;outline:none;padding:16px;line-height:1.7;width:100%;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+  .note-rich-editor:empty:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
   .modal{background:var(--surface);border-radius:var(--radius-lg);border:.5px solid var(--border2);padding:22px;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
   .modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
@@ -237,14 +244,13 @@ function defaultAvisos(taskTime){
   return avisos;
 }
 function avisoLabel(a){
-  if(a.type==='exact')return`⏰ Hora exacta: ${a.hour||'--:--'}`;
   if(a.type==='prev_day')return`📅 Día anterior a las ${a.hour}`;
   if(a.type==='same_day')return`☀️ Mismo día a las ${a.hour}`;
   if(a.type==='before_1h')return`⏰ 1 hora antes`;
   if(a.type==='before_30m')return`⏰ 30 min antes`;
   return'';
 }
-const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',exact:'🕐',before_1h:'⏰',before_30m:'⏰'};
+const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',before_1h:'⏰',before_30m:'⏰'};
  
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function autoTextColor(hex){
@@ -352,12 +358,6 @@ function scheduleNotifications(){
         const[h,m]=a.hour.split(':').map(Number);
         when=new Date(ty,tm-1,td-1,h,m,0);
       }else if(a.type==='same_day'&&a.hour){
-        const[h,m]=a.hour.split(':').map(Number);
-        when=new Date(ty,tm-1,td,h,m,0);
-      }else if(a.type==='exact'&&a.hour){
-        const[h,m]=a.hour.split(':').map(Number);
-        when=new Date(ty,tm-1,td,h,m,0);
-      }else if(a.type==='before_1h'&&t.time){
         const[h,m]=t.time.split(':').map(Number);
         when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-3600000);
       }else if(a.type==='before_30m'&&t.time){
@@ -528,9 +528,12 @@ function renderNotesList(){
   sorted.forEach(n=>{
     const bg=n.color||PALETTE[0],fg=autoTextColor(bg);
     const date=new Date(n.updated_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});
+    // Strip HTML for preview
+    const tmp=document.createElement('div');tmp.innerHTML=n.content||'';
+    const preview=tmp.textContent||tmp.innerText||'Nota vacía...';
     html+=`<div class="note-card" style="background:${bg};color:${fg}" onclick="openNote('${n.id}')">
       <div class="note-card-title">${esc(n.title||'Sin título')}</div>
-      <div class="note-card-preview">${esc(n.content||'Nota vacía...')}</div>
+      <div class="note-card-preview">${esc(preview)}</div>
       <div class="note-card-date">${date}</div>
     </div>`;
   });
@@ -550,10 +553,40 @@ function renderNoteEditor(){
   let paletteHtml=PALETTE.map(c=>`<div class="note-color-dot${c===bg?' sel':''}" style="background:${c}" onclick="setNoteColor('${n.id}','${c}')"></div>`).join('');
   document.getElementById('contentArea').innerHTML=`
     <div class="note-editor">
-      <textarea class="note-content-input" id="noteContentInput" placeholder="Escribe aquí tu nota..." oninput="scheduleNoteSave()"></textarea>
-      <div class="note-editor-toolbar">${paletteHtml}<span class="note-save-info" id="noteSaveInfo">Guardado</span></div>
+      <div class="note-rich-editor" id="noteRichEditor" contenteditable="true"
+        data-placeholder="Escribe aquí tu nota..."
+        oninput="scheduleNoteSave();updateFmtButtons()"
+        onkeyup="updateFmtButtons()"
+        onmouseup="updateFmtButtons()"></div>
+      <div class="note-editor-toolbar">
+        <button class="note-fmt-btn" id="fmtBold" onclick="fmtNote('bold')" title="Negrita"><b>B</b></button>
+        <button class="note-fmt-btn" id="fmtItalic" onclick="fmtNote('italic')" title="Cursiva"><i>I</i></button>
+        <button class="note-fmt-btn" id="fmtUnderline" onclick="fmtNote('underline')" title="Subrayado"><u>S</u></button>
+        <div class="note-toolbar-sep"></div>
+        ${paletteHtml}
+        <span class="note-save-info" id="noteSaveInfo">Guardado</span>
+      </div>
     </div>`;
-  document.getElementById('noteContentInput').value=n.content||'';
+  const editor=document.getElementById('noteRichEditor');
+  editor.innerHTML=n.content||'';
+  // Mover cursor al final
+  const range=document.createRange(),sel=window.getSelection();
+  range.selectNodeContents(editor);range.collapse(false);
+  sel.removeAllRanges();sel.addRange(range);
+}
+ 
+function fmtNote(cmd){
+  document.getElementById('noteRichEditor')?.focus();
+  document.execCommand(cmd,false,null);
+  updateFmtButtons();
+  scheduleNoteSave();
+}
+ 
+function updateFmtButtons(){
+  ['bold','italic','underline'].forEach(cmd=>{
+    const btn=document.getElementById('fmt'+cmd.charAt(0).toUpperCase()+cmd.slice(1));
+    if(btn)btn.classList.toggle('active',document.queryCommandState(cmd));
+  });
 }
  
 function createNote(){
@@ -585,7 +618,8 @@ async function saveNote(){
   if(!activeNoteId)return;
   const n=notes.find(x=>x.id===activeNoteId);if(!n)return;
   const title=document.getElementById('noteTitleInput')?.value||'';
-  const content=document.getElementById('noteContentInput')?.value||'';
+  // Guardar HTML del editor rich text (incluye <b>, <i>, <u>)
+  const content=document.getElementById('noteRichEditor')?.innerHTML||'';
   const now=new Date().toISOString();
   n.title=title;n.content=content;n.updated_at=now;
   renderSidebarNotes();
@@ -711,7 +745,6 @@ function renderAvisoList(){
       <select class="aviso-type-select" onchange="changeAvisoType(${i},this.value)">
         <option value="prev_day"${a.type==='prev_day'?' selected':''}>Día anterior</option>
         <option value="same_day"${a.type==='same_day'?' selected':''}>Mismo día</option>
-        <option value="exact"${a.type==='exact'?' selected':''}>Hora exacta</option>
         ${hasTime?`<option value="before_1h"${a.type==='before_1h'?' selected':''}>1 hora antes</option>`:''}
         ${hasTime?`<option value="before_30m"${a.type==='before_30m'?' selected':''}>30 min antes</option>`:''}
       </select>
@@ -743,7 +776,6 @@ function changeAvisoType(i,type){
   modalAvisos[i].type=type;
   if(type==='prev_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
   if(type==='same_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='08:00';
-  if(type==='exact'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
   renderAvisoList();
 }
 function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
