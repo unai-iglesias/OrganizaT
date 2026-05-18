@@ -138,11 +138,13 @@
   .notif-row-label{font-size:12px;color:var(--text2)}
   .notif-hint{font-size:11px;color:var(--text3);line-height:1.6}
   .aviso-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-  .aviso-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);position:relative}
+  .aviso-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);position:relative;flex-wrap:wrap}
   .aviso-item.disabled{opacity:.45}
   .aviso-emoji{font-size:14px;flex-shrink:0}
-  .aviso-type-select{flex:1;padding:3px 6px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none;cursor:pointer}
+  .aviso-type-select{flex:1;min-width:120px;padding:3px 6px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none;cursor:pointer}
   .aviso-time-input{width:80px;padding:3px 6px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none}
+  .aviso-custom-row{width:100%;display:flex;gap:6px;padding-left:22px;margin-top:4px}
+  .aviso-custom-row .aviso-time-input{flex:1;width:auto}
   .aviso-toggle{flex-shrink:0}
   .aviso-remove{flex-shrink:0;background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;border-radius:4px}
   .aviso-remove:hover{color:#A32D2D;background:#FCEBEB}
@@ -1037,13 +1039,22 @@ function renderAvisoList(){
         <option value="custom_date"${a.type==='custom_date'?' selected':''}>Día personalizado</option>
       </select>
       ${needsHour?`<input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
-      ${isCustom?`<input class="aviso-time-input" style="width:110px" type="date" value="${a.custom_date||''}" onchange="changeAvisoCustomDate(${i},this.value)" title="Fecha del aviso"/><input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
-      ${needsTime?`<span style="font-size:10px;color:var(--text3)">Requiere hora</span>`:''}
+      ${isCustom?`
       <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
         <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
         <span class="toggle-slider"></span>
       </label>
       <button class="aviso-remove" onclick="removeAviso(${i})" title="Eliminar aviso">×</button>
+      <div class="aviso-custom-row">
+        <input class="aviso-time-input" type="date" value="${a.custom_date||''}" onchange="changeAvisoCustomDate(${i},this.value)" title="Fecha del aviso"/>
+        <input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>
+      </div>`:`
+      <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
+        <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <button class="aviso-remove" onclick="removeAviso(${i})" title="Eliminar aviso">×</button>`}
+      ${needsTime?`<span style="font-size:10px;color:var(--text3)">Requiere hora</span>`:''}
     </div>`;
   });
   html+='</div>';
