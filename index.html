@@ -1076,7 +1076,13 @@ function changeAvisoType(i,type){
   modalAvisos[i].type=type;
   if(type==='prev_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
   if(type==='same_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='08:00';
-  if(type==='custom_date'){if(!modalAvisos[i].hour)modalAvisos[i].hour='09:00';if(!modalAvisos[i].custom_date)modalAvisos[i].custom_date='';}
+  if(type==='custom_date'){
+    if(!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
+    if(!modalAvisos[i].custom_date){
+      const taskDate=document.getElementById('fDate')?.value||'';
+      modalAvisos[i].custom_date=taskDate;
+    }
+  }
   renderAvisoList();
 }
 function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
