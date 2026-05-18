@@ -798,16 +798,21 @@ function updateColorPreview(){
   if(p){p.style.background=selColor;p.style.color=selText;p.style.webkitTextFillColor=selText;}
 }
  
+// Escapa caracteres especiales para usar dentro de atributos HTML
+function escAttr(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+ 
 // MODALES
 function openTaskModal(id,preDate){
   editTaskId=id||null;
   const t=id?tasks.find(x=>x.id===id):null;
   let defList=activeListId==='all'?(lists[0]?.id||''):activeListId;
-  let opts=lists.map(l=>`<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${l.name}</option>`).join('');
+  let opts=lists.map(l=>`<option value="${l.id}"${(t?t.list_id:defList)===l.id?' selected':''}>${escAttr(l.name)}</option>`).join('');
   const dateVal=t?t.date:(preDate||todayStr());
   const timeVal=t?(t.time||''):'';
-  // notify: si la tarea ya existe respeta su valor; si es nueva, activo por defecto si notifEnabled
-  const notifyVal=t?(t.notify===true||t.notify===null):notifEnabled;
+ 
+  // notify: leer el valor booleano real de la tarea; para nueva usar notifEnabled
+  // Supabase puede devolver true/false/null — tratamos null como false
+  const notifyVal = t ? (t.notify === true) : notifEnabled;
  
   const notifSection=`<div class="notif-section">
     <div class="notif-section-title">🔔 Notificaciones</div>
@@ -822,13 +827,13 @@ function openTaskModal(id,preDate){
   </div>`;
  
   const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
-    <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${t?t.title:''}" placeholder="¿Qué tienes que hacer?"/></div>
+    <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${escAttr(t?t.title:'')}" placeholder="¿Qué tienes que hacer?"/></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
     <div class="fg-row">
       <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
       <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label><input type="time" id="fTime" value="${timeVal}" oninput="updateNotifHint(this.value)"/></div>
     </div>
-    <div class="fg"><label>Descripción <span style="color:var(--text3);font-weight:400">(opcional)</span></label><textarea id="fDesc" placeholder="Detalles...">${t?t.description:''}</textarea></div>
+    <div class="fg"><label>Descripción <span style="color:var(--text3);font-weight:400">(opcional)</span></label><textarea id="fDesc" placeholder="Detalles..."></textarea></div>
     ${notifSection}
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
@@ -836,6 +841,9 @@ function openTaskModal(id,preDate){
       <button class="btn-p" onclick="saveTask()">Guardar</button>
     </div>`;
   showModal(html);
+  // Rellenar textarea con JS para evitar que caracteres especiales rompan el HTML
+  const fDesc=document.getElementById('fDesc');
+  if(fDesc) fDesc.value=t?(t.description||''):'';
   setTimeout(()=>document.getElementById('fTitle')?.focus(),50);
 }
 window.openTaskModal=openTaskModal;
@@ -848,10 +856,11 @@ window.updateNotifHint=function(timeVal){
 function openListModal(id){
   editListId=id||null;
   const l=id?lists.find(x=>x.id===id):null;
-  selColor=l?l.color:PALETTE[0];
-  selText=autoTextColor(selColor);
+  // Reiniciar siempre selColor/selText desde los datos reales de la lista
+  selColor = l ? (l.color || PALETTE[0]) : PALETTE[0];
+  selText  = l ? (l.text_color || autoTextColor(selColor)) : autoTextColor(selColor);
   const html=`<h3>${id?'Editar lista':'Nueva lista'}</h3>
-    <div class="fg"><label>Nombre</label><input type="text" id="lName" value="${l?l.name:''}" placeholder="Ej: Urgente, Fútbol..."/></div>
+    <div class="fg"><label>Nombre</label><input type="text" id="lName" value="${escAttr(l?l.name:'')}" placeholder="Ej: Urgente, Fútbol..."/></div>
     <div class="fg"><label>Color</label>${buildColorPicker(selColor)}</div>
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
@@ -874,7 +883,8 @@ window.saveTask=async function(){
   if(!title||!date)return;
   const description=document.getElementById('fDesc').value.trim();
   const time=document.getElementById('fTime').value||null;
-  const notify=document.getElementById('fNotify')?.checked||false;
+  const notifyEl=document.getElementById('fNotify');
+  const notify=notifyEl ? notifyEl.checked : false;
   if(editTaskId){
     const t=tasks.find(x=>x.id===editTaskId);
     Object.assign(t,{title,date,list_id,description,time,notify});
