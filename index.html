@@ -126,6 +126,18 @@
   .notif-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);margin-bottom:8px}
   .notif-row-label{font-size:12px;color:var(--text2)}
   .notif-hint{font-size:11px;color:var(--text3);line-height:1.6}
+  .aviso-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .aviso-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);position:relative}
+  .aviso-item.disabled{opacity:.45}
+  .aviso-emoji{font-size:14px;flex-shrink:0}
+  .aviso-type-select{flex:1;padding:3px 6px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none;cursor:pointer}
+  .aviso-time-input{width:80px;padding:3px 6px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none}
+  .aviso-toggle{flex-shrink:0}
+  .aviso-remove{flex-shrink:0;background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;border-radius:4px}
+  .aviso-remove:hover{color:#A32D2D;background:#FCEBEB}
+  .add-aviso-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--radius);border:.5px dashed var(--border2);background:none;color:var(--text3);font-size:12px;cursor:pointer;width:100%;font-family:inherit;transition:background .12s;margin-top:2px}
+  .add-aviso-btn:hover{background:var(--surface);color:var(--text2)}
+  .add-aviso-btn:disabled{opacity:.35;cursor:not-allowed}
   .toggle{position:relative;width:36px;height:20px;display:inline-block}
   .toggle input{opacity:0;width:0;height:0;position:absolute}
   .toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:10px;cursor:pointer;transition:background .2s}
@@ -215,6 +227,25 @@ let messaging=null,notifEnabled=false;
 let activeNoteId=null,noteAutoSaveTimer=null;
 let notifTimers=[];
  
+// ── AVISOS POR DEFECTO ────────────────────────────────────────────────────────
+function defaultAvisos(taskTime){
+  const avisos=[
+    {id:'a1',type:'prev_day',hour:'09:00',enabled:true},
+    {id:'a2',type:'same_day',hour:'08:00',enabled:true},
+  ];
+  if(taskTime) avisos.push({id:'a3',type:'before_1h',hour:'',enabled:true});
+  return avisos;
+}
+function avisoLabel(a){
+  if(a.type==='exact')return`⏰ Hora exacta: ${a.hour||'--:--'}`;
+  if(a.type==='prev_day')return`📅 Día anterior a las ${a.hour}`;
+  if(a.type==='same_day')return`☀️ Mismo día a las ${a.hour}`;
+  if(a.type==='before_1h')return`⏰ 1 hora antes`;
+  if(a.type==='before_30m')return`⏰ 30 min antes`;
+  return'';
+}
+const AVISO_EMOJIS={prev_day:'📅',same_day:'☀️',exact:'🕐',before_1h:'⏰',before_30m:'⏰'};
+ 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
 function autoTextColor(hex){
   if(!hex||hex.length<7)return'#f0efe9';
@@ -264,14 +295,14 @@ function setSyncing(s){document.getElementById('syncDot').className='sync-dot'+(
 function setError(){document.getElementById('syncDot').className='sync-dot error';document.getElementById('syncText').textContent='Error de conexión';}
  
 // ── FIREBASE ─────────────────────────────────────────────────────────────────
-let swRegistration=null;
 async function initFirebase(){
   try{
     firebase.initializeApp(FB_CONFIG);
     messaging=firebase.messaging();
-    // Registrar SW manualmente y guardarlo para pasarlo a getToken()
+    // Registrar el service worker manualmente para controlar la ruta
     if('serviceWorker' in navigator){
-      swRegistration=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+      await messaging.useServiceWorker(reg);
     }
     messaging.onMessage(payload=>{
       const{title,body}=payload.notification;
@@ -287,10 +318,7 @@ async function enableNotifications(ask=true){
     let perm=Notification.permission;
     if(perm==='default'&&ask)perm=await Notification.requestPermission();
     if(perm!=='granted'){alert('Permite las notificaciones en tu navegador.');return;}
-    // Se pasa el serviceWorkerRegistration para que Firebase use nuestro SW
-    const tokenOpts={vapidKey:VAPID_KEY};
-    if(swRegistration) tokenOpts.serviceWorkerRegistration=swRegistration;
-    const token=await messaging.getToken(tokenOpts);
+    const token=await messaging.getToken({vapidKey:VAPID_KEY});
     if(token){localStorage.setItem('ot_fcm_token',token);localStorage.setItem('ot_notif','on');notifEnabled=true;scheduleNotifications();updateNotifUI();}
   }catch(e){console.warn('Error notificaciones:',e);}
 }
@@ -308,10 +336,31 @@ function scheduleNotifications(){
   if(!notifEnabled)return;
   const now=new Date();
   tasks.filter(t=>t.notify&&!t.done&&t.date).forEach(t=>{
+    const avisos=t.avisos||defaultAvisos(t.time);
     const[ty,tm,td]=t.date.split('-').map(Number);
-    scheduleOne(new Date(ty,tm-1,td-1,9,0,0),now,'📅 Mañana tienes una tarea',t.title,t.id+'_prev');
-    scheduleOne(new Date(ty,tm-1,td,8,0,0),now,'☀️ Hoy tienes una tarea',t.title,t.id+'_day');
-    if(t.time){const[h,m]=t.time.split(':').map(Number);scheduleOne(new Date(new Date(ty,tm-1,td,h,m,0).getTime()-3600000),now,'⏰ En 1 hora',t.title,t.id+'_hour');}
+    avisos.filter(a=>a.enabled).forEach(a=>{
+      let when=null;
+      if(a.type==='prev_day'&&a.hour){
+        const[h,m]=a.hour.split(':').map(Number);
+        when=new Date(ty,tm-1,td-1,h,m,0);
+      }else if(a.type==='same_day'&&a.hour){
+        const[h,m]=a.hour.split(':').map(Number);
+        when=new Date(ty,tm-1,td,h,m,0);
+      }else if(a.type==='exact'&&a.hour){
+        const[h,m]=a.hour.split(':').map(Number);
+        when=new Date(ty,tm-1,td,h,m,0);
+      }else if(a.type==='before_1h'&&t.time){
+        const[h,m]=t.time.split(':').map(Number);
+        when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-3600000);
+      }else if(a.type==='before_30m'&&t.time){
+        const[h,m]=t.time.split(':').map(Number);
+        when=new Date(new Date(ty,tm-1,td,h,m,0).getTime()-1800000);
+      }
+      if(when){
+        const label=avisoLabel(a);
+        scheduleOne(when,now,`🔔 ${label}`,t.title,t.id+'_'+a.id);
+      }
+    });
   });
 }
 function scheduleOne(when,now,title,body,tag){
@@ -599,6 +648,9 @@ function updateColorPreview(){const p=document.getElementById('colorPreview');if
 function showModal(html){document.getElementById('modalBox').innerHTML=html;document.getElementById('overlay').style.display='flex';}
 function closeModal(){document.getElementById('overlay').style.display='none';editTaskId=null;editListId=null;}
  
+// estado temporal de avisos mientras el modal está abierto
+let modalAvisos=[];
+ 
 function openTaskModal(id,preDate){
   editTaskId=id||null;
   const t=id?tasks.find(x=>x.id===id):null;
@@ -607,21 +659,22 @@ function openTaskModal(id,preDate){
   const dateVal=t?t.date:(preDate||todayStr());
   const timeVal=t?(t.time||''):'';
   const notifyVal=t?(t.notify===true):notifEnabled;
+  // Inicializar avisos temporales
+  modalAvisos=t?.avisos?JSON.parse(JSON.stringify(t.avisos)):defaultAvisos(timeVal);
   const html=`<h3>${id?'Editar tarea':'Nueva tarea'}</h3>
     <div class="fg"><label>Título</label><input type="text" id="fTitle" value="${esc(t?t.title:'')}" placeholder="¿Qué tienes que hacer?"/></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
     <div class="fg-row">
       <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
-      <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label><input type="time" id="fTime" value="${timeVal}" oninput="updateNotifHint(this.value)"/></div>
+      <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label><input type="time" id="fTime" value="${timeVal}" oninput="onTaskTimeChange(this.value)"/></div>
     </div>
     <div class="fg"><label>Descripción <span style="color:var(--text3);font-weight:400">(opcional)</span></label><textarea id="fDesc" placeholder="Detalles..."></textarea></div>
     <div class="notif-section">
-      <div class="notif-section-title">🔔 Notificaciones</div>
-      <div class="notif-row">
-        <span class="notif-row-label">Activar avisos para esta tarea</span>
-        <label class="toggle"><input type="checkbox" id="fNotify" ${notifyVal?'checked':''}><span class="toggle-slider"></span></label>
+      <div class="notif-row" style="margin-bottom:10px">
+        <span class="notif-row-label" style="font-weight:600">🔔 Avisos</span>
+        <label class="toggle"><input type="checkbox" id="fNotify" ${notifyVal?'checked':''} onchange="renderAvisoList()"><span class="toggle-slider"></span></label>
       </div>
-      <div class="notif-hint" id="notifHint">📅 El día anterior a las 9:00<br>☀️ El mismo día a las 8:00${timeVal?'<br>⏰ 1 hora antes de la hora asignada':''}</div>
+      <div id="avisoContainer"></div>
     </div>
     <div class="mactions">
       <button class="btn-c" onclick="closeModal()">Cancelar</button>
@@ -630,11 +683,69 @@ function openTaskModal(id,preDate){
     </div>`;
   showModal(html);
   document.getElementById('fDesc').value=t?(t.description||''):'';
+  renderAvisoList();
 }
  
-function updateNotifHint(v){
-  const h=document.getElementById('notifHint');
-  if(h)h.innerHTML=`📅 El día anterior a las 9:00<br>☀️ El mismo día a las 8:00${v?'<br>⏰ 1 hora antes de la hora asignada':''}`;
+function renderAvisoList(){
+  const enabled=document.getElementById('fNotify')?.checked;
+  const container=document.getElementById('avisoContainer');
+  if(!container)return;
+  if(!enabled){container.innerHTML='<div style="font-size:11px;color:var(--text3);padding:2px 0">Activa los avisos para configurarlos.</div>';return;}
+  const taskTime=document.getElementById('fTime')?.value||'';
+  const hasTime=!!taskTime;
+  let html='<div class="aviso-list">';
+  modalAvisos.forEach((a,i)=>{
+    const emoji=AVISO_EMOJIS[a.type]||'🔔';
+    const needsHour=a.type==='prev_day'||a.type==='same_day'||a.type==='exact';
+    const needsTime=(a.type==='before_1h'||a.type==='before_30m')&&!hasTime;
+    html+=`<div class="aviso-item${a.enabled?'':' disabled'}">
+      <span class="aviso-emoji">${emoji}</span>
+      <select class="aviso-type-select" onchange="changeAvisoType(${i},this.value)">
+        <option value="prev_day"${a.type==='prev_day'?' selected':''}>Día anterior</option>
+        <option value="same_day"${a.type==='same_day'?' selected':''}>Mismo día</option>
+        <option value="exact"${a.type==='exact'?' selected':''}>Hora exacta</option>
+        ${hasTime?`<option value="before_1h"${a.type==='before_1h'?' selected':''}>1 hora antes</option>`:''}
+        ${hasTime?`<option value="before_30m"${a.type==='before_30m'?' selected':''}>30 min antes</option>`:''}
+      </select>
+      ${needsHour?`<input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
+      ${needsTime?`<span style="font-size:10px;color:var(--text3)">Requiere hora</span>`:''}
+      <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
+        <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <button class="aviso-remove" onclick="removeAviso(${i})" title="Eliminar aviso">×</button>
+    </div>`;
+  });
+  html+='</div>';
+  const canAdd=modalAvisos.length<3;
+  html+=`<button class="add-aviso-btn" onclick="addAviso()" ${canAdd?'':'disabled'}><span style="font-size:16px">＋</span> Añadir aviso${canAdd?'':' (máx. 3)'}</button>`;
+  container.innerHTML=html;
+}
+ 
+function onTaskTimeChange(val){
+  // Si se pone/quita hora, actualizar tipos before_* que ya no apliquen
+  if(!val){
+    modalAvisos=modalAvisos.map(a=>
+      (a.type==='before_1h'||a.type==='before_30m')?{...a,type:'same_day',hour:'08:00'}:a
+    );
+  }
+  renderAvisoList();
+}
+function changeAvisoType(i,type){
+  modalAvisos[i].type=type;
+  if(type==='prev_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
+  if(type==='same_day'&&!modalAvisos[i].hour)modalAvisos[i].hour='08:00';
+  if(type==='exact'&&!modalAvisos[i].hour)modalAvisos[i].hour='09:00';
+  renderAvisoList();
+}
+function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
+function toggleAviso(i,checked){modalAvisos[i].enabled=checked;renderAvisoList();}
+function removeAviso(i){modalAvisos.splice(i,1);renderAvisoList();}
+function addAviso(){
+  if(modalAvisos.length>=3)return;
+  const taskTime=document.getElementById('fTime')?.value||'';
+  modalAvisos.push({id:'a'+Date.now(),type:'same_day',hour:'09:00',enabled:true});
+  renderAvisoList();
 }
  
 function openListModal(id){
@@ -663,15 +774,16 @@ async function saveTask(){
   const description=document.getElementById('fDesc').value.trim();
   const time=document.getElementById('fTime').value||null;
   const notify=document.getElementById('fNotify').checked;
+  const avisos=JSON.parse(JSON.stringify(modalAvisos));
   if(editTaskId){
-    const id=editTaskId; // ← captura antes de closeModal()
+    const id=editTaskId;
     const t=tasks.find(x=>x.id===id);
-    Object.assign(t,{title,date,list_id,description,time,notify});
+    Object.assign(t,{title,date,list_id,description,time,notify,avisos});
     closeModal();render();scheduleNotifications();
-    await api('PATCH','tasks',{title,date,list_id,description,time,notify},id);
+    await api('PATCH','tasks',{title,date,list_id,description,time,notify,avisos},id);
   }else{
     const id='t'+Date.now();
-    const newTask={id,list_id,title,date,description,time,notify,done:false};
+    const newTask={id,list_id,title,date,description,time,notify,avisos,done:false};
     tasks.push(newTask);closeModal();render();scheduleNotifications();
     await api('POST','tasks',newTask);
   }
