@@ -686,8 +686,9 @@ function renderNoteContent(n){
  
   if(noteMode==='text'){
     document.getElementById('contentArea').innerHTML=`
-      <div class="note-editor">
+      <div style="display:flex;flex-direction:column;height:100%">
         <div class="note-rich-editor" id="noteRichEditor" contenteditable="true"
+          style="flex:1;overflow-y:auto"
           data-placeholder="Escribe aquí tu nota..."
           oninput="scheduleNoteSave();updateFmtButtons()"
           onkeyup="updateFmtButtons()"
