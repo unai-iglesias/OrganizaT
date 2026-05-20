@@ -79,11 +79,23 @@
   .content-area{flex:1;overflow:auto;padding:10px}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
   @media(max-width:600px){
-    .cal-grid{gap:2px}
-    .day-name{font-size:9px;padding:2px}
-    .day-cell{min-height:58px;padding:2px}
-    .day-num{font-size:10px}
-    .cal-task{font-size:9px;padding:1px 3px}
+    /* Calendario: sin scroll horizontal, todo visible */
+    .content-area{padding:4px;overflow-x:hidden}
+    .cal-grid{gap:1px;width:100%}
+    .day-name{font-size:9px;padding:2px 0;text-align:center}
+    .day-cell{min-height:52px;padding:2px 1px;border-radius:6px}
+    .day-num{font-size:10px;margin-bottom:1px}
+    .cal-task{font-size:8.5px;padding:1px 2px;border-radius:3px;margin-bottom:1px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    /* Header mes: compacto y sin pisar texto */
+    .main-header{padding:8px 10px;gap:6px;flex-wrap:nowrap;min-height:0}
+    .main-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+    .month-label{font-size:12px;min-width:0;text-align:center}
+    .cal-nav{gap:3px}
+    .nav-btn{width:24px;height:24px;font-size:13px}
+    .view-tabs{gap:2px;flex-shrink:0}
+    .vtab{padding:4px 7px;font-size:10px}
+    .main-title-area{min-width:0;flex:0 0 auto;max-width:95px}
   }
   .day-name{text-align:center;font-size:11px;color:var(--text3);padding:4px;font-weight:500}
   .day-cell{min-height:76px;border-radius:var(--radius);border:.5px solid var(--border);padding:4px;background:var(--surface);transition:border-color .12s,background .12s;cursor:pointer;-webkit-tap-highlight-color:transparent}
