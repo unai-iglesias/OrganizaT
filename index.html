@@ -32,6 +32,14 @@
   .layout{display:flex;flex:1;overflow:hidden}
   .sidebar{width:220px;min-width:220px;background:var(--surface);border-right:.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .2s,min-width .2s}
   .sidebar.collapsed{width:0;min-width:0;border-right:none}
+  /* Móvil: sidebar como overlay */
+  @media(max-width:600px){
+    .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:50;width:80vw;min-width:0;transform:translateX(0);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.25)}
+    .sidebar.collapsed{transform:translateX(-100%);width:80vw}
+    .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:49;display:none}
+    .sidebar-overlay.visible{display:block}
+    .layout{display:block}
+  }
   .sb-header{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 6px;flex-shrink:0}
   .sb-section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
   .collapse-btn{width:22px;height:22px;border-radius:6px;border:.5px solid var(--border2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:background .12s}
@@ -70,6 +78,13 @@
   .vtab.active{background:var(--surface2);color:var(--text);border-color:var(--border2);font-weight:500}
   .content-area{flex:1;overflow:auto;padding:10px}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  @media(max-width:600px){
+    .cal-grid{gap:2px}
+    .day-name{font-size:9px;padding:2px}
+    .day-cell{min-height:58px;padding:2px}
+    .day-num{font-size:10px}
+    .cal-task{font-size:9px;padding:1px 3px}
+  }
   .day-name{text-align:center;font-size:11px;color:var(--text3);padding:4px;font-weight:500}
   .day-cell{min-height:76px;border-radius:var(--radius);border:.5px solid var(--border);padding:4px;background:var(--surface);transition:border-color .12s,background .12s;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .day-cell:hover{border-color:var(--border2);background:var(--surface2)}
@@ -238,6 +253,7 @@
   <div class="notif-btn-wrap"><button class="icon-btn" id="notifBtn" onclick="toggleNotifications()">🔕</button><div class="notif-badge" id="notifBadge"></div></div>
   <button class="icon-btn" id="themeBtn" onclick="cycleTheme()">🌗</button>
 </div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="layout">
   <div class="sidebar" id="sidebar">
     <div class="sb-header"><span class="sb-section-label" id="sbLabel">Listas</span><button class="collapse-btn" onclick="toggleSidebar()">‹</button></div>
@@ -1168,8 +1184,16 @@ function scrollToNowOrMorning(){
 }
 function setList(id){activeListId=id;render();}
 function toggleSidebar(){
-  const sb=document.getElementById('sidebar'),btn=document.getElementById('expandBtn');
-  sb.classList.toggle('collapsed');btn.classList.toggle('visible',sb.classList.contains('collapsed'));
+  const sb=document.getElementById('sidebar');
+  const btn=document.getElementById('expandBtn');
+  const overlay=document.getElementById('sidebarOverlay');
+  const isMobile=window.innerWidth<=600;
+  sb.classList.toggle('collapsed');
+  const isCollapsed=sb.classList.contains('collapsed');
+  btn.classList.toggle('visible', isCollapsed);
+  if(isMobile && overlay){
+    overlay.classList.toggle('visible', !isCollapsed);
+  }
 }
  
 // ── DRAG & DROP ───────────────────────────────────────────────────────────────
@@ -1615,7 +1639,15 @@ async function deleteList(){
  
 // ── ARRANQUE ──────────────────────────────────────────────────────────────────
 applyTheme();
+// En móvil el sidebar empieza cerrado
+if(window.innerWidth<=600){
+  const sb=document.getElementById('sidebar');
+  const btn=document.getElementById('expandBtn');
+  if(sb) sb.classList.add('collapsed');
+  if(btn) btn.classList.add('visible');
+}
 initFirebase().then(()=>loadAll());
 </script>
 </body>
 </html>
+ 
