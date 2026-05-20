@@ -1222,6 +1222,114 @@ function clearTitleErr(){
   if(inp) inp.style.border='';
   if(err) err.style.display='none';
 }
+// ── DATE / TIME PICKERS ───────────────────────────────────────────────────────
+function buildDatePicker(id, val){
+  const today = new Date();
+  let [selY, selM, selD] = val ? val.split('-').map(Number) : [today.getFullYear(), today.getMonth()+1, today.getDate()];
+  // Render inicial del calendario
+  return `<div id="${id}_cal_wrap">
+    ${renderCalendarPicker(id, selY, selM, selD)}
+    <input type="hidden" id="${id}" value="${val||''}"/>
+  </div>`;
+}
+ 
+function renderCalendarPicker(id, y, m, d){
+  const MONTHS_CAL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const DAYS_CAL=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const firstDay = new Date(y, m-1, 1).getDay(); // 0=Dom
+  const startDay = firstDay === 0 ? 6 : firstDay - 1; // convertir a Lu=0
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+ 
+  let html = `<div style="border:.5px solid var(--border2);border-radius:var(--radius);overflow:hidden;user-select:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface2);border-bottom:.5px solid var(--border)">
+      <button type="button" onclick="calPickerNav('${id}',${y},${m},-1)" style="width:24px;height:24px;border-radius:6px;border:.5px solid var(--border2);background:none;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center">‹</button>
+      <span style="font-size:12px;font-weight:600;color:var(--text)">${MONTHS_CAL[m-1]} ${y}</span>
+      <button type="button" onclick="calPickerNav('${id}',${y},${m},1)" style="width:24px;height:24px;border-radius:6px;border:.5px solid var(--border2);background:none;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center">›</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:4px;background:var(--surface)">`;
+ 
+  DAYS_CAL.forEach(dn => {
+    html += `<div style="text-align:center;font-size:10px;color:var(--text3);padding:3px;font-weight:500">${dn}</div>`;
+  });
+ 
+  // Celdas vacías antes del primer día
+  for(let i=0; i<startDay; i++){
+    html += `<div></div>`;
+  }
+ 
+  for(let day=1; day<=daysInMonth; day++){
+    const ds = `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isSelected = day===d;
+    const isToday = ds===todayStr;
+    let bg = 'none', color = 'var(--text2)', border = 'none', fw = '400';
+    if(isSelected){ bg='#27500A'; color='#EAF3DE'; border='none'; fw='600'; }
+    else if(isToday){ border='.5px solid #378ADD'; color='#185FA5'; fw='600'; }
+    html += `<div onclick="calPickerSelect('${id}',${y},${m},${day})" style="text-align:center;font-size:12px;padding:5px 2px;border-radius:6px;cursor:pointer;background:${bg};color:${color};border:${border};font-weight:${fw};transition:background .1s" onmouseover="if(!${isSelected})this.style.background='var(--surface2)'" onmouseout="if(!${isSelected})this.style.background='${bg}'">${day}</div>`;
+  }
+ 
+  html += `</div></div>`;
+  return html;
+}
+ 
+function calPickerNav(id, y, m, dir){
+  m += dir;
+  if(m > 12){ m=1; y++; }
+  if(m < 1){ m=12; y--; }
+  // Mantener día seleccionado actual
+  const curVal = document.getElementById(id)?.value;
+  let d = curVal ? parseInt(curVal.split('-')[2]) : new Date().getDate();
+  const maxD = new Date(y, m, 0).getDate();
+  d = Math.min(d, maxD);
+  const wrap = document.getElementById(id+'_cal_wrap');
+  if(wrap){
+    wrap.innerHTML = renderCalendarPicker(id, y, m, d) + `<input type="hidden" id="${id}" value="${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}"/>`;
+  }
+}
+ 
+function calPickerSelect(id, y, m, d){
+  const val = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const wrap = document.getElementById(id+'_cal_wrap');
+  if(wrap){
+    wrap.innerHTML = renderCalendarPicker(id, y, m, d) + `<input type="hidden" id="${id}" value="${val}"/>`;
+  }
+}
+ 
+function syncDatePicker(id){
+  // Compatibilidad: no hace nada (el calendario actualiza solo)
+}
+ 
+function buildTimePicker(id, val){
+  const hours   = Array.from({length:24},(_,i)=>i);
+  const minutes = Array.from({length:60},(_,i)=>i);
+  let selH = '', selM2 = '';
+  if(val){ const p=val.split(':'); selH=parseInt(p[0]); selM2=parseInt(p[1]); }
+ 
+  const hourOpts = `<option value="">--</option>` + hours.map(h=>`<option value="${h}"${h===selH?' selected':''}>${String(h).padStart(2,'0')}</option>`).join('');
+  const minOpts  = `<option value="">--</option>` + minutes.map(m=>`<option value="${m}"${m===selM2?' selected':''}>${String(m).padStart(2,'0')}</option>`).join('');
+ 
+  return `<div style="display:flex;gap:4px;align-items:center" id="${id}_wrap">
+    <select id="${id}_h" style="flex:1;padding:8px 6px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;outline:none" onchange="syncTimePicker('${id}')">${hourOpts}</select>
+    <span style="color:var(--text2);font-weight:600">:</span>
+    <select id="${id}_min" style="flex:1;padding:8px 6px;border-radius:var(--radius);border:.5px solid var(--border2);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;outline:none" onchange="syncTimePicker('${id}')">${minOpts}</select>
+    <input type="hidden" id="${id}" value="${val||''}"/>
+  </div>`;
+}
+ 
+function syncTimePicker(id){
+  const h   = document.getElementById(id+'_h').value;
+  const min = document.getElementById(id+'_min').value;
+  if(h==='' || min===''){
+    document.getElementById(id).value='';
+    onTaskTimeChange('');
+  } else {
+    const val = `${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+    document.getElementById(id).value = val;
+    onTaskTimeChange(val);
+  }
+}
+ 
 function showModal(html){document.getElementById('modalBox').innerHTML=html;document.getElementById('overlay').style.display='flex';}
 function closeModal(){document.getElementById('overlay').style.display='none';editTaskId=null;editListId=null;}
  
@@ -1243,8 +1351,8 @@ function openTaskModal(id,preDate){
     <div id="fTitleErr" style="display:none;font-size:11px;color:#A32D2D;margin-top:4px">⚠️ El título es obligatorio para guardar la tarea.</div></div>
     <div class="fg"><label>Lista</label><select id="fList">${opts}</select></div>
     <div class="fg-row">
-      <div class="fg"><label>Fecha</label><input type="date" id="fDate" value="${dateVal}"/></div>
-      <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label><input type="time" id="fTime" value="${timeVal}" oninput="onTaskTimeChange(this.value)"/></div>
+      <div class="fg"><label>Fecha</label>${buildDatePicker('fDate',dateVal)}</div>
+      <div class="fg"><label>Hora <span style="color:var(--text3);font-weight:400">(opcional)</span></label>${buildTimePicker('fTime',timeVal)}</div>
     </div>
     <div class="fg"><label>Descripción <span style="color:var(--text3);font-weight:400">(opcional)</span></label><textarea id="fDesc" placeholder="Detalles..."></textarea></div>
     <div class="notif-section">
@@ -1286,7 +1394,7 @@ function renderAvisoList(){
         ${hasTime?`<option value="before_30m"${a.type==='before_30m'?' selected':''}>30 min antes</option>`:''}
         <option value="custom_date"${a.type==='custom_date'?' selected':''}>Día personalizado</option>
       </select>
-      ${needsHour?`<input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>`:''}
+      ${needsHour?buildAvisoTimePicker(i, a.hour||""):""}
       ${isCustom?`
       <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
         <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
@@ -1295,7 +1403,7 @@ function renderAvisoList(){
       <button class="aviso-remove" onclick="removeAviso(${i})" title="Eliminar aviso">×</button>
       <div class="aviso-custom-row">
         <input class="aviso-time-input" type="date" value="${a.custom_date||''}" onchange="changeAvisoCustomDate(${i},this.value)" title="Fecha del aviso"/>
-        <input class="aviso-time-input" type="time" value="${a.hour||''}" onchange="changeAvisoHour(${i},this.value)" title="Hora del aviso"/>
+        ${buildAvisoTimePicker(i, a.hour||"")}
       </div>`:`
       <label class="toggle aviso-toggle" title="${a.enabled?'Desactivar':'Activar'}">
         <input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAviso(${i},this.checked)">
@@ -1332,6 +1440,28 @@ function changeAvisoType(i,type){
     }
   }
   renderAvisoList();
+}
+function buildAvisoTimePicker(idx, val){
+  const hours   = Array.from({length:24},(_,i)=>i);
+  const minutes = Array.from({length:60},(_,i)=>i);
+  let selH='', selM='';
+  if(val){ const p=val.split(':'); selH=parseInt(p[0]); selM=parseInt(p[1]); }
+  const sel = s => `style="padding:3px 4px;border-radius:6px;border:.5px solid var(--border2);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;outline:none;cursor:pointer"`;
+  const hourOpts = hours.map(h=>`<option value="${h}"${h===selH?' selected':''}>${String(h).padStart(2,'0')}</option>`).join('');
+  const minOpts  = minutes.map(m=>`<option value="${m}"${m===selM?' selected':''}>${String(m).padStart(2,'0')}</option>`).join('');
+  return `<div style="display:flex;align-items:center;gap:3px">
+    <select ${sel()} onchange="changeAvisoHourFromPicker(${idx},this)">${hourOpts}</select>
+    <span style="color:var(--text2);font-weight:600;font-size:11px">:</span>
+    <select ${sel()} onchange="changeAvisoHourFromPicker(${idx},this)">${minOpts}</select>
+  </div>`;
+}
+function changeAvisoHourFromPicker(idx, el){
+  const row = el.closest('.aviso-item');
+  const selects = row.querySelectorAll('select[onchange*="changeAvisoHourFromPicker"]');
+  if(selects.length<2) return;
+  const h = String(selects[0].value).padStart(2,'0');
+  const m = String(selects[1].value).padStart(2,'0');
+  modalAvisos[idx].hour = `${h}:${m}`;
 }
 function changeAvisoHour(i,val){modalAvisos[i].hour=val;}
 function changeAvisoCustomDate(i,val){
