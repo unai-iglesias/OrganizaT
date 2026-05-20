@@ -404,10 +404,32 @@ async function enableNotifications(ask=true){
     const tokenOpts={vapidKey:VAPID_KEY};
     if(swRegistration)tokenOpts.serviceWorkerRegistration=swRegistration;
     const token=await messaging.getToken(tokenOpts);
-    if(token){localStorage.setItem('ot_fcm_token',token);localStorage.setItem('ot_notif','on');notifEnabled=true;scheduleNotifications();updateNotifUI();}
+    if(token){
+      localStorage.setItem('ot_fcm_token',token);
+      localStorage.setItem('ot_notif','on');
+      notifEnabled=true;
+      // Guardar token en Supabase para notificaciones con app cerrada
+      const tokenId='tk_'+token.slice(-16);
+      try{ await api('POST','fcm_tokens',{id:tokenId,token}); }catch(e){}
+      scheduleNotifications();
+      updateNotifUI();
+    }
   }catch(e){console.warn('Error notificaciones:',e);}
 }
-async function disableNotifications(){notifEnabled=false;localStorage.setItem('ot_notif','off');notifTimers.forEach(t=>clearTimeout(t));notifTimers=[];updateNotifUI();}
+async function disableNotifications(){
+  notifEnabled=false;
+  localStorage.setItem('ot_notif','off');
+  notifTimers.forEach(t=>clearTimeout(t));
+  notifTimers=[];
+  // Borrar token de Supabase al desactivar
+  const token=localStorage.getItem('ot_fcm_token');
+  if(token){
+    const tokenId='tk_'+token.slice(-16);
+    try{ await api('DELETE','fcm_tokens',null,tokenId); }catch(e){}
+    localStorage.removeItem('ot_fcm_token');
+  }
+  updateNotifUI();
+}
 function toggleNotifications(){if(notifEnabled)disableNotifications();else enableNotifications(true);}
 function updateNotifUI(){document.getElementById('notifBtn').textContent=notifEnabled?'🔔':'🔕';document.getElementById('notifBadge').classList.toggle('on',!notifEnabled&&Notification.permission==='default');}
 function showInAppNotif(title,body){
