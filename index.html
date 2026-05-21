@@ -81,12 +81,36 @@
   @media(max-width:600px){
     /* Calendario: sin scroll horizontal, todo visible */
     .content-area{padding:4px;overflow-x:hidden}
-    .cal-grid{gap:1px;width:100%}
-    .day-name{font-size:9px;padding:2px 0;text-align:center}
-    .day-cell{min-height:52px;padding:2px 1px;border-radius:6px}
-    .day-num{font-size:10px;margin-bottom:1px}
-    .cal-task{font-size:8.5px;padding:1px 2px;border-radius:3px;margin-bottom:1px;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .cal-grid{gap:1px;width:100%;table-layout:fixed}
+    .day-name{font-size:9px;padding:2px 0;text-align:center;width:calc(100%/7)}
+    /* Celdas: altura fija, ancho igual siempre */
+    .day-cell{
+      height:58px;
+      min-height:unset;
+      max-height:58px;
+      width:calc((100vw - 8px) / 7);
+      max-width:calc((100vw - 8px) / 7);
+      min-width:0;
+      padding:2px 1px;
+      border-radius:6px;
+      overflow:hidden;
+      box-sizing:border-box;
+    }
+    .day-num{font-size:10px;margin-bottom:1px;line-height:1}
+    /* Tareas: una línea, truncadas, sin expandir la celda */
+    .cal-task{
+      font-size:8px;
+      padding:1px 2px;
+      border-radius:3px;
+      margin-bottom:1px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      width:100%;
+      max-width:100%;
+      display:block;
+      line-height:1.2;
+    }
     /* Header mes: compacto y sin pisar texto */
     .main-header{padding:8px 10px;gap:6px;flex-wrap:nowrap;min-height:0}
     .main-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
