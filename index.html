@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -156,6 +156,12 @@
   .note-add-card:hover{background:var(--surface);color:var(--text2)}
   .note-content-input{flex:1;border:none;background:none;font-size:13px;color:var(--text);font-family:inherit;outline:none;resize:none;padding:16px;line-height:1.7;width:100%;overflow-y:auto}
   .note-content-input::placeholder{color:var(--text3)}
+  @media(max-width:600px){
+    .note-rich-editor{font-size:16px!important}
+    .note-content-input{font-size:16px!important}
+    .note-title-input{font-size:16px!important}
+    .fg input,.fg select,.fg textarea{font-size:16px!important}
+  }
   .note-title-input{flex:1;border:none;background:none;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;outline:none;min-width:0}
   .note-title-input::placeholder{color:var(--text3)}
   .note-back-btn{padding:5px 10px;border-radius:var(--radius);border:.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
@@ -1686,4 +1692,3 @@ initFirebase().then(()=>loadAll());
 </script>
 </body>
 </html>
- 
